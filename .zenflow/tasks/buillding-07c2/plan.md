@@ -778,6 +778,7 @@ Validate performance requirements and optimize as needed.
 ---
 
 ### [ ] Step 25: Resilience and Reconnection Testing
+<!-- chat-id: b36f267f-6e5e-4044-ab69-4b80863c0f56 -->
 Test system resilience to failures.
 
 **Tasks**:
