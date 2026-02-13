@@ -40,6 +40,7 @@ export const Chat: React.FC = () => {
   const currentGuildId = useGuildStore((state) => state.currentGuildId);
   const channels = useGuildStore((state) => state.channels);
   const currentChannelId = useGuildStore((state) => state.currentChannelId);
+  const members = useGuildStore((state) => state.members);
   const messages = useMessageStore((state) => state.messages);
   const [input, setInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,10 +53,12 @@ export const Chat: React.FC = () => {
 
   const channelsMap = channels && typeof channels === 'object' ? channels : {};
   const messagesMap = messages && typeof messages === 'object' ? messages : {};
+  const membersMap = members && typeof members === 'object' ? members : {};
   
   const guildChannels = currentGuildId ? channelsMap[currentGuildId] || [] : [];
   const currentChannel = guildChannels.find(c => c.id === currentChannelId);
   const channelMessages = currentChannel?.irc_channel_name ? messagesMap[currentChannel.irc_channel_name] || [] : [];
+  const currentMembers = currentChannel?.irc_channel_name ? membersMap[currentChannel.irc_channel_name] || [] : [];
   const filteredMessages = searchQuery
     ? channelMessages.filter(m => m.content.toLowerCase().includes(searchQuery.toLowerCase()))
     : channelMessages;
@@ -249,6 +252,29 @@ export const Chat: React.FC = () => {
             </form>
           </div>
         </div>
+
+        {showMemberList && (
+          <div className="glass-panel w-60 bg-black/20 backdrop-blur-md border-l border-white/5 p-4 overflow-y-auto my-1 mr-1 rounded-r-lg border-y-0 border-r-0 h-[calc(100vh-8px)]">
+            <h3 className="text-xs font-bold uppercase text-gray-400 mb-4">Online — {currentMembers.length}</h3>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2 p-2 hover:bg-gray-700 rounded-md cursor-pointer transition-colors group">
+                <div className={`flex h-8 w-8 items-center justify-center rounded-full ${nickColor(user?.irc_nick || 'Unknown User')}`}>
+                  <span className="text-xs font-bold text-white uppercase">{user?.irc_nick?.[0] || '?'}</span>
+                </div>
+                <span className="text-sm text-gray-300 group-hover:text-white font-medium">{user?.irc_nick || 'Unknown User'} (You)</span>
+              </div>
+
+              {currentMembers.filter(name => name !== user?.irc_nick).map(name => (
+                <div key={name} className="flex items-center space-x-2 p-2 hover:bg-gray-700 rounded-md cursor-pointer transition-colors group">
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-full ${nickColor(name)}`}>
+                    <span className="text-xs font-bold text-white uppercase">{name[0]}</span>
+                  </div>
+                  <span className="text-sm text-gray-400 group-hover:text-white font-medium">{name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

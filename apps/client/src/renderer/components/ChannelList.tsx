@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/auth.store';
 import { useGuildStore } from '../store/guild.store';
 import { usePresenceStore } from '../store/presence.store';
+import { ServerSettingsModal } from './ServerSettingsModal';
+import { ChannelContextMenu } from './ChannelContextMenu';
 
 function nickColor(nick: string): string {
   const colors = [
@@ -31,6 +33,9 @@ export const ChannelList: React.FC = () => {
   const [isCreatingChannel, setIsCreatingChannel] = useState(false);
   const [newChannelName, setNewChannelName] = useState('');
   const [showStatusMenu, setShowStatusMenu] = useState(false);
+  const [showServerSettings, setShowServerSettings] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; channelId: string } | null>(null);
+  const [isConnected, setIsConnected] = useState(true);
 
   const guildsList = Array.isArray(guilds) ? guilds : [];
   const channelsMap = channels && typeof channels === 'object' ? channels : {};
@@ -43,12 +48,28 @@ export const ChannelList: React.FC = () => {
   const userPresence = presencesMap[userNick] || 'online';
 
   useEffect(() => {
+    const onConnect = () => setIsConnected(true);
+    const onDisconnect = () => setIsConnected(false);
+
+    window.ironcord.onIRCConnected(onConnect);
+    window.ironcord.onIRCDisconnected(onDisconnect);
+    window.ironcord.onIRCRegistered(onConnect);
+
+    setIsConnected(true);
+  }, []);
+
+  useEffect(() => {
     if (currentGuildId && !channels[currentGuildId]) {
       window.ironcord.getChannels(currentGuildId).then((guildChannels: Channel[]) => {
         setChannels(currentGuildId, guildChannels);
       });
     }
   }, [currentGuildId, channels, setChannels]);
+
+  useEffect(() => {
+    setShowServerSettings(false);
+    setContextMenu(null);
+  }, [currentGuildId]);
 
   const handleCreateChannel = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,8 +127,7 @@ export const ChannelList: React.FC = () => {
               className="text-gray-400 hover:text-white transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
-                const event = new CustomEvent('show-toast', { detail: 'Server Settings' });
-                window.dispatchEvent(event);
+                setShowServerSettings(true);
               }}
             />
           </div>
@@ -119,6 +139,10 @@ export const ChannelList: React.FC = () => {
           <div
             key={channel.id}
             onClick={() => setCurrentChannel(channel.id)}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              setContextMenu({ x: e.clientX, y: e.clientY, channelId: channel.id });
+            }}
             className={`group flex cursor-pointer items-center rounded-md px-2 py-1 transition-all duration-200 ${
               currentChannel?.id === channel.id
                 ? 'bg-white/10 text-white shadow-inner'
@@ -133,16 +157,16 @@ export const ChannelList: React.FC = () => {
 
       <div className="relative flex items-center bg-black/40 p-2">
         <div
-          className="flex items-center space-x-2 overflow-hidden rounded p-1 transition-colors flex-1 cursor-pointer hover:bg-white/5"
-          onClick={() => setShowStatusMenu(!showStatusMenu)}
+          className={`flex items-center space-x-2 overflow-hidden rounded p-1 transition-colors flex-1 ${isConnected ? 'cursor-pointer hover:bg-white/5' : 'cursor-not-allowed opacity-75'}`}
+          onClick={() => isConnected && setShowStatusMenu(!showStatusMenu)}
         >
           <div className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${nickColor(userNick)}`}>
             <span className="text-xs font-bold text-white uppercase">{userNick.charAt(0)}</span>
-            <div className={`absolute right-0 bottom-0 h-3 w-3 rounded-full border-2 border-gray-900 ${statusColors[userPresence as keyof typeof statusColors]}`} />
+            <div className={`absolute right-0 bottom-0 h-3 w-3 rounded-full border-2 border-gray-900 ${isConnected ? statusColors[userPresence as keyof typeof statusColors] : 'bg-red-500'}`} />
           </div>
           <div className="flex flex-col truncate">
             <span className="text-xs font-bold text-white truncate">{userNick}</span>
-            <span className="text-[10px] text-gray-400">{statusLabels[userPresence as keyof typeof statusLabels]}</span>
+            <span className="text-[10px] text-gray-400">{isConnected ? statusLabels[userPresence as keyof typeof statusLabels] : 'Disconnected'}</span>
           </div>
         </div>
 
@@ -212,6 +236,22 @@ export const ChannelList: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+
+      <ServerSettingsModal
+        isOpen={showServerSettings}
+        onClose={() => setShowServerSettings(false)}
+      />
+
+      {contextMenu && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setContextMenu(null)} />
+          <ChannelContextMenu
+            channelId={contextMenu.channelId}
+            position={{ x: contextMenu.x, y: contextMenu.y }}
+            onClose={() => setContextMenu(null)}
+          />
+        </>
       )}
     </div>
   );

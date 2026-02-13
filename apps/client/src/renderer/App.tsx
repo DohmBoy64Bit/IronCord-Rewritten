@@ -39,6 +39,22 @@ export const App: React.FC = () => {
         const channel = historyMessages[0].channel;
         setMessages(channel, historyMessages);
       });
+
+      window.ironcord.onIRCMembers((data: { channel: string; members: string[] }) => {
+        useGuildStore.getState().setMembers(data.channel, data.members);
+      });
+
+      window.ironcord.onIRCRegistered(() => {
+        console.log('[App] IRC registered');
+      });
+
+      window.ironcord.onIRCConnected(() => {
+        console.log('[App] IRC connected');
+      });
+
+      window.ironcord.onIRCDisconnected(() => {
+        console.log('[App] IRC disconnected');
+      });
     }
   }, [user, setGuilds, addMessage, setMessages]);
 
