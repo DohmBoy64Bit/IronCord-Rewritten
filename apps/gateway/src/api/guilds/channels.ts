@@ -148,6 +148,17 @@ export async function createChannelHandler(
       return;
     }
 
+    // Check for duplicate channel name
+    const existingChannels = await channelRepo.findByGuildId(guildId);
+    const duplicate = existingChannels.find((c) => c.name.toLowerCase() === name.toLowerCase());
+    if (duplicate) {
+      res.status(409).json({
+        success: false,
+        error: 'A channel with this name already exists',
+      });
+      return;
+    }
+
     const sanitizedName = name
       .toLowerCase()
       .replace(/[^a-z0-9-]/g, '-')
