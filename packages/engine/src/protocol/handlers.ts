@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { logger } from '@ironcord/shared/logger';
-import type { IRCMessage, IRCMessageData, IRCMembers, IRCPresence } from '../types.js';
+import type { IRCMessage, IRCMembers, IRCPresence } from '../types.js';
 import { extractNickFromPrefix } from './parser.js';
 import { extractMessageData, getBatchTag } from './tags.js';
 import { formatPong, formatCapabilityRequest, formatCapabilityEnd } from './formatter.js';
@@ -70,7 +70,10 @@ export class MessageHandlers {
   }
 
   private handlePing(message: IRCMessage): void {
-    this.sender(formatPong(message.params[0]));
+    const server = message.params[0];
+    if (server) {
+      this.sender(formatPong(server));
+    }
   }
 
   private handleError(message: IRCMessage): void {
@@ -84,9 +87,13 @@ export class MessageHandlers {
 
   private handleCapability(message: IRCMessage): void {
     const subcommand = message.params[1];
+    if (!subcommand) return;
 
     if (subcommand === 'LS') {
-      const availableCaps = message.params[message.params.length - 1].split(' ');
+      const capsParam = message.params[message.params.length - 1];
+      if (!capsParam) return;
+      
+      const availableCaps = capsParam.split(' ');
       const requestedCaps = [];
 
       if (availableCaps.includes('sasl') && this.config.password) requestedCaps.push('sasl');
@@ -107,7 +114,10 @@ export class MessageHandlers {
         this.sender(formatCapabilityEnd());
       }
     } else if (subcommand === 'ACK') {
-      const ackedCaps = message.params[message.params.length - 1].split(' ');
+      const ackedCapsParam = message.params[message.params.length - 1];
+      if (!ackedCapsParam) return;
+      
+      const ackedCaps = ackedCapsParam.split(' ');
       this.saslHandler.handleCapabilityAck(ackedCaps);
     }
   }
@@ -131,7 +141,10 @@ export class MessageHandlers {
 
   private handleNameReply(message: IRCMessage): void {
     const channel = message.params[2];
-    const names = message.params[message.params.length - 1].split(' ');
+    const namesParam = message.params[message.params.length - 1];
+    if (!channel || !namesParam) return;
+
+    const names = namesParam.split(' ');
 
     if (!this.channelMembers.has(channel)) {
       this.channelMembers.set(channel, new Set());
@@ -148,6 +161,8 @@ export class MessageHandlers {
 
   private handleJoin(message: IRCMessage): void {
     const channel = message.params[0];
+    if (!channel) return;
+    
     const nick = extractNickFromPrefix(message.prefix);
 
     if (!this.channelMembers.has(channel)) {
@@ -160,6 +175,8 @@ export class MessageHandlers {
 
   private handlePart(message: IRCMessage): void {
     const channel = message.params[0];
+    if (!channel) return;
+    
     const nick = extractNickFromPrefix(message.prefix);
 
     const memberSet = this.channelMembers.get(channel);
@@ -183,6 +200,7 @@ export class MessageHandlers {
   private handleKick(message: IRCMessage): void {
     const channel = message.params[0];
     const kickedNick = message.params[1];
+    if (!channel || !kickedNick) return;
 
     const memberSet = this.channelMembers.get(channel);
     if (memberSet) {
@@ -194,6 +212,7 @@ export class MessageHandlers {
   private handleNickChange(message: IRCMessage): void {
     const oldNick = extractNickFromPrefix(message.prefix);
     const newNick = message.params[0];
+    if (!newNick) return;
 
     for (const [channel, memberSet] of this.channelMembers.entries()) {
       if (memberSet.has(oldNick)) {
@@ -218,6 +237,8 @@ export class MessageHandlers {
 
   private handlePrivmsg(message: IRCMessage): void {
     const channel = message.params[0];
+    if (!channel) return;
+    
     const contentParts = message.params.slice(1).join(' ');
     const content = contentParts.startsWith(':') ? contentParts.substring(1) : contentParts;
 

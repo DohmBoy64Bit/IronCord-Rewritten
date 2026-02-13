@@ -102,7 +102,7 @@ Create the shared utilities and types package as the foundation layer.
 
 ---
 
-### [ ] Step 3: Extract `/packages/engine` IRC Protocol Layer
+### [x] Step 3: Extract `/packages/engine` IRC Protocol Layer
 <!-- chat-id: ec479bba-a0ae-443e-bbf3-b5d89f02a3b4 -->
 Extract IRC protocol implementation from v1 `irc-client.ts` into modular components.
 
@@ -124,15 +124,15 @@ Extract IRC protocol implementation from v1 `irc-client.ts` into modular compone
 - Create `package.json` and `tsconfig.json`
 
 **Verification**:
-- [ ] Package builds successfully: `npm run build --workspace=@ironcord/engine`
-- [ ] All unit tests pass with real IRC server: `npm test --workspace=@ironcord/engine`
-- [ ] Test SASL authentication with valid/invalid credentials
-- [ ] Test CHATHISTORY retrieval
-- [ ] Test CAP negotiation
-- [ ] Test reconnection logic
-- [ ] No TypeScript errors
-- [ ] Test coverage >80%
-- [ ] All files <300 lines
+- [x] Package builds successfully: `npm run build --workspace=@ironcord/engine`
+- [x] All unit tests pass with real IRC server: `npm test --workspace=@ironcord/engine`
+- [x] Test SASL authentication with valid/invalid credentials
+- [x] Test CHATHISTORY retrieval
+- [x] Test CAP negotiation
+- [x] Test reconnection logic
+- [x] No TypeScript errors
+- [x] Test coverage >80%
+- [x] All files <300 lines
 
 ---
 

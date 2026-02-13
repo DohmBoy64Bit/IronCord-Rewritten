@@ -24,7 +24,7 @@ export class ReconnectHandler extends EventEmitter {
     this.options = { ...DEFAULT_RECONNECT_OPTIONS, ...options };
   }
 
-  public handleClose(hadError: boolean): void {
+  public handleClose(_hadError: boolean): void {
     if (this.intentionalDisconnect) {
       return;
     }

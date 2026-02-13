@@ -2,29 +2,22 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { IRCClient } from './irc-client.js';
 import type { IRCConfig } from './types.js';
 
-vi.mock('./connection/socket.js', () => {
-  const mockSocket = {
-    on: vi.fn(),
-    connect: vi.fn(),
-    send: vi.fn(),
-    disconnect: vi.fn(),
-    isConnected: vi.fn(() => true),
-  };
+const mockSocket = {
+  on: vi.fn(),
+  connect: vi.fn(),
+  send: vi.fn(),
+  disconnect: vi.fn(),
+  isConnected: vi.fn(() => true),
+};
 
+vi.mock('./connection/socket.js', () => {
   return {
     SocketWrapper: vi.fn(() => mockSocket),
-    __getMockSocket: () => mockSocket,
   };
 });
 
-const getMockSocket = () => {
-  const { __getMockSocket } = vi.mocked(await import('./connection/socket.js'));
-  return __getMockSocket();
-};
-
 describe('IRCClient', () => {
   let client: IRCClient;
-  let mockSocket: any;
   const config: IRCConfig = {
     host: 'localhost',
     port: 6667,
@@ -34,9 +27,8 @@ describe('IRCClient', () => {
     password: 'testpass',
   };
 
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks();
-    mockSocket = await getMockSocket();
     mockSocket.on.mockReturnValue(mockSocket);
     client = new IRCClient(config, { maxRetries: 0 });
   });

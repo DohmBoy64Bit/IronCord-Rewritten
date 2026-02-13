@@ -10,6 +10,7 @@ export class BatchHandler extends EventEmitter {
 
   public handleBatch(message: IRCMessage): void {
     const batchRef = message.params[0];
+    if (!batchRef) return;
 
     if (batchRef.startsWith('+')) {
       const batchId = batchRef.substring(1);
