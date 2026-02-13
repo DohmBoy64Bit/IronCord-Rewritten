@@ -14,6 +14,7 @@
     "test:services:stop": "tsx tests/teardown-real-services.ts",
     "test:services:restart": "npm run test:services:stop && npm run test:services:start",
     "test:integration": "npm run test:services:start && npm test --workspaces --if-present && npm run test:services:stop",
+    "test:performance": "tsx tests/performance/performance-tests.ts",
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present"
@@ -22,6 +23,7 @@
     "@types/node": "^20.11.0",
     "@types/pg": "^8.10.9",
     "pg": "^8.11.3",
+    "socket.io-client": "^4.7.2",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   },
