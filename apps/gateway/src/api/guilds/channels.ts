@@ -1,0 +1,191 @@
+import { Request, Response, NextFunction } from 'express';
+import { Channel, CreateChannelRequest } from '@ironcord/shared';
+import { ChannelRepository, GuildRepository, MemberRepository } from '@ironcord/db';
+import { logger } from '@ironcord/shared';
+import { AuthenticatedRequest } from '../../middleware/auth.middleware.js';
+
+interface ListChannelsResponse {
+  success: boolean;
+  channels?: Channel[];
+  error?: string;
+}
+
+interface CreateChannelResponse {
+  success: boolean;
+  channel?: Channel;
+  error?: string;
+}
+
+export async function listChannelsHandler(
+  req: Request,
+  res: Response<ListChannelsResponse>,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const authReq = req as AuthenticatedRequest;
+    const userId = authReq.user?.userId;
+    const guildId = typeof req.params.id === 'string' ? req.params.id : req.params.id?.[0];
+
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        error: 'Unauthorized',
+      });
+      return;
+    }
+
+    if (!guildId) {
+      res.status(400).json({
+        success: false,
+        error: 'Guild ID is required',
+      });
+      return;
+    }
+
+    const guildRepo = new GuildRepository(req.app.locals.db);
+    const memberRepo = new MemberRepository(req.app.locals.db);
+    const channelRepo = new ChannelRepository(req.app.locals.db);
+
+    const guildExists = await guildRepo.exists(guildId);
+    if (!guildExists) {
+      res.status(404).json({
+        success: false,
+        error: 'Guild not found',
+      });
+      return;
+    }
+
+    const isMember = await memberRepo.isMember(guildId, userId);
+    if (!isMember) {
+      res.status(403).json({
+        success: false,
+        error: 'Not a member of this guild',
+      });
+      return;
+    }
+
+    const channels = await channelRepo.findByGuildId(guildId);
+
+    logger.info('CHANNEL-LIST', {
+      userId,
+      guildId,
+      channelCount: channels.length,
+    });
+
+    res.json({
+      success: true,
+      channels,
+    });
+  } catch (err) {
+    logger.error('CHANNEL-LIST', {
+      error: err instanceof Error ? err.message : 'Unknown error',
+    });
+    next(err);
+  }
+}
+
+export async function createChannelHandler(
+  req: Request,
+  res: Response<CreateChannelResponse>,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const authReq = req as AuthenticatedRequest;
+    const userId = authReq.user?.userId;
+    const guildId = typeof req.params.id === 'string' ? req.params.id : req.params.id?.[0];
+
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        error: 'Unauthorized',
+      });
+      return;
+    }
+
+    if (!guildId) {
+      res.status(400).json({
+        success: false,
+        error: 'Guild ID is required',
+      });
+      return;
+    }
+
+    const { name, topic } = req.body as CreateChannelRequest;
+
+    if (!name || typeof name !== 'string') {
+      res.status(400).json({
+        success: false,
+        error: 'Channel name is required',
+      });
+      return;
+    }
+
+    if (name.length < 1 || name.length > 50) {
+      res.status(400).json({
+        success: false,
+        error: 'Channel name must be between 1 and 50 characters',
+      });
+      return;
+    }
+
+    const guildRepo = new GuildRepository(req.app.locals.db);
+    const channelRepo = new ChannelRepository(req.app.locals.db);
+
+    const guild = await guildRepo.findById(guildId);
+    if (!guild) {
+      res.status(404).json({
+        success: false,
+        error: 'Guild not found',
+      });
+      return;
+    }
+
+    if (guild.owner_id !== userId) {
+      res.status(403).json({
+        success: false,
+        error: 'Only the guild owner can create channels',
+      });
+      return;
+    }
+
+    const sanitizedName = name
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    const ircChannelName = `#${guild.irc_namespace_prefix}-${sanitizedName}`;
+
+    logger.info('CHANNEL-CREATE', {
+      phase: 'attempt',
+      userId,
+      guildId,
+      channelName: name,
+      ircChannelName,
+    });
+
+    const channel = await channelRepo.create({
+      guild_id: guildId,
+      name,
+      irc_channel_name: ircChannelName,
+      topic,
+    });
+
+    logger.info('CHANNEL-CREATE', {
+      phase: 'success',
+      userId,
+      guildId,
+      channelId: channel.id,
+    });
+
+    res.status(201).json({
+      success: true,
+      channel,
+    });
+  } catch (err) {
+    logger.error('CHANNEL-CREATE', {
+      error: err instanceof Error ? err.message : 'Unknown error',
+    });
+    next(err);
+  }
+}

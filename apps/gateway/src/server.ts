@@ -4,6 +4,7 @@ import { config } from './config/env.js';
 import { errorMiddleware, notFoundMiddleware } from './middleware/error.middleware.js';
 import { logger } from '@ironcord/shared';
 import authRouter from './api/auth/index.js';
+import guildsRouter from './api/guilds/index.js';
 
 export function createServer(): Express {
   const app = express();
@@ -24,6 +25,7 @@ export function createServer(): Express {
   });
 
   app.use('/auth', authRouter);
+  app.use('/guilds', guildsRouter);
 
   app.use(notFoundMiddleware);
   app.use(errorMiddleware);

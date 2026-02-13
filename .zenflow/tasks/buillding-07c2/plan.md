@@ -400,7 +400,8 @@ Implement user registration and login endpoints.
 
 ---
 
-### [ ] Step 13: Implement Gateway Guild Routes
+### [x] Step 13: Implement Gateway Guild Routes
+<!-- chat-id: 6853a97e-6f5e-4f02-afb5-2bbf5722bafc -->
 Implement guild management endpoints.
 
 **Tasks**:
@@ -423,13 +424,13 @@ Implement guild management endpoints.
 - Add integration tests with **real database**
 
 **Verification**:
-- [ ] Guild list endpoint works: `GET /guilds/mine`
-- [ ] Guild creation endpoint works: `POST /guilds`
-- [ ] Channel list endpoint works: `GET /guilds/:id/channels`
-- [ ] Channel creation endpoint works: `POST /guilds/:id/channels`
-- [ ] Integration tests pass with real database
-- [ ] Test coverage >80%
-- [ ] All files <300 lines
+- [x] Guild list endpoint works: `GET /guilds/mine`
+- [x] Guild creation endpoint works: `POST /guilds`
+- [x] Channel list endpoint works: `GET /guilds/:id/channels`
+- [x] Channel creation endpoint works: `POST /guilds/:id/channels`
+- [x] Integration tests pass with real database (24/24 tests passed)
+- [x] Test coverage >80% (channels: 82%, create: 90%, list: 83%)
+- [x] All files <300 lines (list: 65, create: 107, channels: 192, index: 14)
 
 ---
 
