@@ -19,10 +19,10 @@ export const Login: React.FC<LoginProps> = ({ onSwitch }) => {
 
     try {
       const response = await window.ironcord.login({ email, password });
-      if (response.success && response.user && response.token) {
+      if (response.user && response.token) {
         setAuth(response.user, response.token);
       } else {
-        setError(response.message || 'Login failed');
+        setError('Login failed');
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'An error occurred during login';
