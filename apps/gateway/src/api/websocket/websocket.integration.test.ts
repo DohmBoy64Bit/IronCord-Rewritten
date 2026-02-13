@@ -24,7 +24,12 @@ describe('WebSocket Integration Tests', () => {
   let client: ClientSocket;
 
   beforeAll(async () => {
-    const testDbUrl = process.env.TEST_DATABASE_URL || 'postgresql://ironcord_test:ironcord_test_password@localhost:5433/ironcord_test';
+    const dbHost = process.env.DB_HOST || 'localhost';
+    const dbPort = process.env.DB_PORT || '5433';
+    const dbName = process.env.DB_NAME || 'ironcord_test';
+    const dbUser = process.env.DB_USER || 'ironcord_test';
+    const dbPassword = process.env.DB_PASSWORD || 'ironcord_test_password';
+    const testDbUrl = process.env.TEST_DATABASE_URL || `postgresql://${dbUser}:${dbPassword}@${dbHost}:${dbPort}/${dbName}`;
     
     db = new DatabaseService({
       connectionString: testDbUrl,

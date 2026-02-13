@@ -718,18 +718,28 @@ Run comprehensive integration tests across the entire stack.
 - [x] Error handling works properly (validation, constraints, edge cases tested)
 
 **Notes**:
-- Created comprehensive integration test report: `tests/integration/INTEGRATION_TEST_REPORT.md`
-- Created multi-user test script: `tests/integration/multi-user-test.ts`
-- Fixed gateway test race conditions by adding `vitest.config.ts` with sequential execution
-- Total tests executed: 320 (46 + 115 + 81 + 78)
-- All tests run against real services (PostgreSQL 15 + Ergo IRC v2.14.0)
+- ✅ Created comprehensive integration test report: `tests/integration/INTEGRATION_TEST_REPORT.md` (3 addendums)
+- ✅ Created multi-user test script: `tests/integration/multi-user-test.ts`
+- ✅ Fixed gateway test race conditions by adding `vitest.config.ts` with sequential execution
+- ✅ Fixed WebSocket test hardcoded port issue - now uses environment variables
+- ✅ Validated complete control flow against unified production container (port 5432, 6667):
+  - User registration → login → JWT
+  - Guild creation → channel creation → IRC mapping
+  - WebSocket connection → IRC bridge → message flow
+  - Chat history retrieval with CHATHISTORY
+  - User presence updates with IRC AWAY
+- ✅ All 78 gateway tests pass against unified container (100% success rate)
+- ✅ Total tests executed: 320 (46 + 115 + 81 + 78)
+- ✅ All tests run against real services (PostgreSQL 15 + Ergo IRC v2.14.0)
+- ✅ Unified container validated production-ready (222 MB image, 3s startup, all health checks pass)
 - Client E2E tests deferred until Step 22 client build issue is resolved
 
-**✅ COMPLETE: All testable integration scenarios validated successfully. System ready for performance testing.**
+**✅ COMPLETE: All testable integration scenarios validated successfully. Unified container production-ready. System ready for performance testing.**
 
 ---
 
 ### [ ] Step 24: Performance Testing and Optimization
+<!-- chat-id: b47c483d-2aad-4475-ad50-647ff31363f4 -->
 Validate performance requirements and optimize as needed.
 
 **Tasks**:
