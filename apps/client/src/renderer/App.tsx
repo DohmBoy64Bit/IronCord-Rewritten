@@ -12,9 +12,10 @@ import { useMessageStore } from './store/message.store';
 
 export const App: React.FC = () => {
   const [view, setView] = useState<'login' | 'register'>('login');
-  const { user } = useAuthStore();
-  const { setGuilds } = useGuildStore();
-  const { addMessage, setMessages } = useMessageStore();
+  const user = useAuthStore((state) => state.user);
+  const setGuilds = useGuildStore((state) => state.setGuilds);
+  const addMessage = useMessageStore((state) => state.addMessage);
+  const setMessages = useMessageStore((state) => state.setMessages);
 
   useEffect(() => {
     if (user) {

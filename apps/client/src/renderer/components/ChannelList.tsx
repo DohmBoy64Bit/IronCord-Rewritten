@@ -20,9 +20,14 @@ function nickColor(nick: string): string {
 }
 
 export const ChannelList: React.FC = () => {
-  const { user } = useAuthStore();
-  const { guilds, currentGuildId, channels, setChannels, currentChannelId, setCurrentChannel } = useGuildStore();
-  const { presences } = usePresenceStore();
+  const user = useAuthStore((state) => state.user);
+  const guilds = useGuildStore((state) => state.guilds);
+  const currentGuildId = useGuildStore((state) => state.currentGuildId);
+  const channels = useGuildStore((state) => state.channels);
+  const setChannels = useGuildStore((state) => state.setChannels);
+  const currentChannelId = useGuildStore((state) => state.currentChannelId);
+  const setCurrentChannel = useGuildStore((state) => state.setCurrentChannel);
+  const presences = usePresenceStore((state) => state.presences);
   const [isCreatingChannel, setIsCreatingChannel] = useState(false);
   const [newChannelName, setNewChannelName] = useState('');
   const [showStatusMenu, setShowStatusMenu] = useState(false);
