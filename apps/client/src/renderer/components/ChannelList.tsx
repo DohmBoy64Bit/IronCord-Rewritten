@@ -40,7 +40,7 @@ export const ChannelList: React.FC = () => {
   const guildsList = Array.isArray(guilds) ? guilds : [];
   const channelsMap = channels && typeof channels === 'object' ? channels : {};
   const presencesMap = presences && typeof presences === 'object' ? presences : {};
-  
+
   const currentGuild = guildsList.find(g => g.id === currentGuildId);
   const guildChannels = currentGuildId ? channelsMap[currentGuildId] || [] : [];
   const currentChannel = guildChannels.find(c => c.id === currentChannelId);
@@ -75,8 +75,7 @@ export const ChannelList: React.FC = () => {
     e.preventDefault();
     if (currentGuildId && newChannelName.trim()) {
       try {
-        const channel = await window.ironcord.createChannel(currentGuildId, { name: newChannelName.trim() });
-        setChannels(currentGuildId, [...guildChannels, channel]);
+        await useGuildStore.getState().createChannel(currentGuildId, newChannelName.trim());
         setNewChannelName('');
         setIsCreatingChannel(false);
       } catch (err) {
@@ -88,6 +87,9 @@ export const ChannelList: React.FC = () => {
   const handleStatusChange = async (status: 'online' | 'idle' | 'dnd' | 'invisible') => {
     setShowStatusMenu(false);
     try {
+      if (userNick) {
+        usePresenceStore.getState().setPresence(userNick, status);
+      }
       await window.ironcord.setPresence(status);
     } catch (err) {
       console.error('Failed to set presence:', err);
@@ -111,7 +113,7 @@ export const ChannelList: React.FC = () => {
   return (
     <div className="glass-panel flex w-60 flex-col bg-black/20 backdrop-blur-lg border-x-0 my-1 h-[calc(100%-8px)] relative">
       <div className="flex h-12 cursor-pointer items-center justify-between border-b border-black/20 px-4 font-bold text-white shadow-sm transition-colors hover:bg-white/5">
-        <span className="truncate">{currentGuild ? currentGuild.name : 'Direct Messages'}</span>
+        <span className="flex-1 min-w-0 truncate">{currentGuild ? currentGuild.name : 'Direct Messages'}</span>
         {currentGuild && (
           <div className="flex items-center space-x-1">
             <Plus
@@ -143,11 +145,10 @@ export const ChannelList: React.FC = () => {
               e.preventDefault();
               setContextMenu({ x: e.clientX, y: e.clientY, channelId: channel.id });
             }}
-            className={`group flex cursor-pointer items-center rounded-md px-2 py-1 transition-all duration-200 ${
-              currentChannel?.id === channel.id
-                ? 'bg-white/10 text-white shadow-inner'
-                : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
-            }`}
+            className={`group flex cursor-pointer items-center rounded-md px-2 py-1 transition-all duration-200 ${currentChannel?.id === channel.id
+              ? 'bg-white/10 text-white shadow-inner'
+              : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
+              }`}
           >
             <Hash size={20} className="mr-2 text-gray-500" />
             <span className="font-medium">{channel.name}</span>

@@ -122,19 +122,23 @@ export function registerIPCHandlers(): void {
   });
 
   ipcMain.handle('guilds:get-mine', async () => {
-    return httpRequest<Guild[]>('GET', '/guilds/mine');
+    const result = await httpRequest<{ guilds: Guild[] }>('GET', '/guilds/mine');
+    return result.guilds;
   });
 
   ipcMain.handle('guilds:get-channels', async (_event, guildId: string) => {
-    return httpRequest<Channel[]>('GET', `/guilds/${guildId}/channels`);
+    const result = await httpRequest<{ channels: Channel[] }>('GET', `/guilds/${guildId}/channels`);
+    return result.channels;
   });
 
   ipcMain.handle('guilds:create', async (_event, data: CreateGuildRequest) => {
-    return httpRequest<Guild>('POST', '/guilds', data);
+    const result = await httpRequest<{ guild: Guild }>('POST', '/guilds', data);
+    return result.guild;
   });
 
   ipcMain.handle('guilds:create-channel', async (_event, guildId: string, data: CreateChannelRequest) => {
-    return httpRequest<Channel>('POST', `/guilds/${guildId}/channels`, data);
+    const result = await httpRequest<{ channel: Channel }>('POST', `/guilds/${guildId}/channels`, data);
+    return result.channel;
   });
 
   ipcMain.handle('presence:set', async (_event, status: UserPresence) => {

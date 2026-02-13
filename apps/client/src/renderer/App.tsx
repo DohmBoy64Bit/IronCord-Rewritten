@@ -9,6 +9,7 @@ import { TitleBar } from './components/TitleBar';
 import { useAuthStore } from './store/auth.store';
 import { useGuildStore } from './store/guild.store';
 import { useMessageStore } from './store/message.store';
+import { usePresenceStore } from './store/presence.store';
 
 export const App: React.FC = () => {
   const [view, setView] = useState<'login' | 'register'>('login');
@@ -54,6 +55,10 @@ export const App: React.FC = () => {
 
       window.ironcord.onIRCDisconnected(() => {
         console.log('[App] IRC disconnected');
+      });
+
+      window.ironcord.onIRCPresence((data: { nick: string; status: any }) => {
+        usePresenceStore.getState().setPresence(data.nick, data.status);
       });
     }
   }, [user, setGuilds, addMessage, setMessages]);

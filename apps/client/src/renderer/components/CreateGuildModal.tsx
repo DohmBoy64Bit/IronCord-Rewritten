@@ -19,7 +19,7 @@ export const CreateGuildModal: React.FC<CreateGuildModalProps> = ({ isOpen, onCl
   const guilds = useGuildStore((state) => state.guilds);
   const setGuilds = useGuildStore((state) => state.setGuilds);
   const setCurrentGuild = useGuildStore((state) => state.setCurrentGuild);
-  
+
   const guildsList = Array.isArray(guilds) ? guilds : [];
 
   if (!isOpen) return null;
@@ -65,6 +65,15 @@ export const CreateGuildModal: React.FC<CreateGuildModalProps> = ({ isOpen, onCl
       const guild = await window.ironcord.createGuild({ name: name.trim() });
       setGuilds([...guildsList, guild]);
       setCurrentGuild(guild.id);
+
+      // Auto-fetch channels for the new guild and select general
+      const channels = await window.ironcord.getChannels(guild.id);
+      useGuildStore.getState().setChannels(guild.id, channels);
+      const generalChannel = channels.find((c: any) => c.name === 'general');
+      if (generalChannel) {
+        useGuildStore.getState().setCurrentChannel(generalChannel.id);
+      }
+
       handleClose();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to create server';

@@ -65,13 +65,12 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({ isOpen
                 key={tab.id}
                 disabled={tab.disabled}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex w-full items-center space-x-2 rounded px-2 py-1.5 text-left text-sm transition-colors ${
-                  activeTab === tab.id
+                className={`flex w-full items-center space-x-2 rounded px-2 py-1.5 text-left text-sm transition-colors ${activeTab === tab.id
                     ? 'bg-indigo-600 text-white'
                     : tab.disabled
-                    ? 'cursor-not-allowed opacity-50 text-gray-500'
-                    : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
-                }`}
+                      ? 'cursor-not-allowed opacity-50 text-gray-500'
+                      : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
+                  }`}
               >
                 <span>{tab.label}</span>
               </button>

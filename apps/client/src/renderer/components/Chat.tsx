@@ -54,7 +54,7 @@ export const Chat: React.FC = () => {
   const channelsMap = channels && typeof channels === 'object' ? channels : {};
   const messagesMap = messages && typeof messages === 'object' ? messages : {};
   const membersMap = members && typeof members === 'object' ? members : {};
-  
+
   const guildChannels = currentGuildId ? channelsMap[currentGuildId] || [] : [];
   const currentChannel = guildChannels.find(c => c.id === currentChannelId);
   const channelMessages = currentChannel?.irc_channel_name ? messagesMap[currentChannel.irc_channel_name] || [] : [];
@@ -156,7 +156,7 @@ export const Chat: React.FC = () => {
               type="text"
               placeholder="Search"
               ref={searchInputRef}
-              className="w-full bg-transparent px-1 outline-hidden"
+              className="w-full bg-transparent px-1 outline-none"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -237,7 +237,7 @@ export const Chat: React.FC = () => {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={`Message #${currentChannel.name}`}
-                className="flex-1 bg-transparent py-2 text-gray-200 outline-hidden placeholder-gray-500"
+                className="flex-1 bg-transparent py-2 text-gray-200 outline-none placeholder-gray-500"
               />
               <button type="submit" className="hidden" aria-hidden="true" />
               <div className="ml-4 flex items-center space-x-3 text-gray-400">
