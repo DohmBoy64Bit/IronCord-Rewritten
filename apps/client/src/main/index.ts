@@ -4,20 +4,22 @@ import { registerIPCHandlers, disconnectIRC } from './ipc-handlers.js';
 
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
-declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
 let mainWindow: BrowserWindow | null = null;
 
 const createWindow = (): void => {
   console.log('[Main] Creating application window...');
-  console.log('[Main] Preload path:', MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY);
+  
+  // Construct preload path - Vite builds to .vite/build/
+  const preloadPath = path.join(__dirname, 'preload.js');
+  console.log('[Main] Preload path:', preloadPath);
   
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     frame: false,
     webPreferences: {
-      preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
+      preload: preloadPath,
       contextIsolation: true,
       nodeIntegration: false,
     },
