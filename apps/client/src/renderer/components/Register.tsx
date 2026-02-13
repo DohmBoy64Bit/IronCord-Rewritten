@@ -39,7 +39,7 @@ export const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
 
   return (
     <div className="flex h-full w-full items-center justify-center text-white">
-      <div className="glass-panel w-full max-w-md rounded-lg p-8 shadow-xl">
+      <div className="w-full max-w-md rounded-lg bg-gray-800 p-8 shadow-xl">
         <h2 className="mb-6 text-center text-3xl font-bold text-white">Create an account</h2>
 
         {error && (
@@ -58,7 +58,7 @@ export const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded bg-gray-900 p-3 text-white outline-hidden focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded bg-gray-900 p-3 text-white outline-none focus:ring-2 focus:ring-indigo-500"
               required
               disabled={loading}
             />
@@ -72,7 +72,7 @@ export const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
               type="text"
               value={ircNick}
               onChange={(e) => setIrcNick(e.target.value)}
-              className="w-full rounded bg-gray-900 p-3 text-white outline-hidden focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded bg-gray-900 p-3 text-white outline-none focus:ring-2 focus:ring-indigo-500"
               required
               disabled={loading}
             />
@@ -86,7 +86,7 @@ export const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded bg-gray-900 p-3 text-white outline-hidden focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded bg-gray-900 p-3 text-white outline-none focus:ring-2 focus:ring-indigo-500"
               required
               disabled={loading}
             />
