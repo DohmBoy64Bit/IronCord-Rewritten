@@ -604,6 +604,7 @@ Update the Electron main process with proper Socket.IO integration.
 ---
 
 ### [ ] Step 20: Update Client Renderer with Shared Types
+<!-- chat-id: bfead6e8-7dff-4882-8338-733490d5a5f9 -->
 Update React components to use shared types and ensure UI compatibility.
 
 **Tasks**:
