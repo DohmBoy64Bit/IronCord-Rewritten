@@ -246,6 +246,7 @@ Create multi-stage Dockerfile integrating Gateway + Ergo IRC.
 ---
 
 ### [ ] Step 8: Create Podman Compose Configuration
+<!-- chat-id: d983fc5f-b0ac-49d1-9760-61ef2f1606bd -->
 Setup Podman Compose orchestration for development and production.
 
 **Tasks**:
