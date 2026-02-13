@@ -34,6 +34,7 @@
     "tsx": "^4.7.0",
     "vitest": "^1.2.0",
     "supertest": "^7.2.2",
+    "socket.io-client": "^4.8.3",
     "rimraf": "^5.0.5"
   }
 }

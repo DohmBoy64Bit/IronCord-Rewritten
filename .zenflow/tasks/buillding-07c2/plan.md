@@ -435,6 +435,7 @@ Implement guild management endpoints.
 ---
 
 ### [ ] Step 14: Implement Gateway WebSocket Server
+<!-- chat-id: ef96e42e-ad01-435d-9ce8-817414e46e85 -->
 Build Socket.IO server with IRC bridge.
 
 **Tasks**:
