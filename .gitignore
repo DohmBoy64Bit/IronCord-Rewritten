@@ -41,3 +41,16 @@ coverage/
 # Electron
 out/
 *.asar
+
+# Zenflow task management
+.zenflow/
+
+# Reference project (legacy v1)
+ReferenceProject/
+
+# Scripts and utilities
+*.py
+*.bat
+
+# AI assistant docs
+CLAUDE.md
