@@ -4,18 +4,20 @@ import { registerIPCHandlers, disconnectIRC } from './ipc-handlers.js';
 
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
+declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
 let mainWindow: BrowserWindow | null = null;
 
 const createWindow = (): void => {
   console.log('[Main] Creating application window...');
+  console.log('[Main] Preload path:', MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY);
   
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     frame: false,
     webPreferences: {
-      preload: path.join(__dirname, '../preload/index.js'),
+      preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
       contextIsolation: true,
       nodeIntegration: false,
     },
