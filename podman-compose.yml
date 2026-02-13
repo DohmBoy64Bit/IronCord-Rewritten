@@ -8,6 +8,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
+      DATABASE_URL: postgresql://ironcord:ironcord_password@db:5432/ironcord
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: ironcord

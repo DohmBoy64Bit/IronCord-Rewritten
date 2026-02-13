@@ -13,6 +13,9 @@ async function startServer(): Promise<void> {
     await db.connect();
     logger.info('DATABASE', { message: 'Database connected' });
 
+    await db.initializeSchema();
+    logger.info('DATABASE', { message: 'Database schema initialized' });
+
     const { app, httpServer } = createServer();
     app.locals.db = db;
 
