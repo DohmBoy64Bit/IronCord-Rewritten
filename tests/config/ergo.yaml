@@ -1,0 +1,61 @@
+network:
+    name: IronCord-Test-Net
+
+server:
+    name: irc.test.ironcord.local
+    listeners:
+        ":6667":
+            tls:
+                disabled: true
+    motd: |
+        IronCord Test IRC Server
+        This is a test environment for integration testing.
+
+accounts:
+    authentication-enabled: true
+    registration:
+        enabled: true
+        allow-before-connect: true
+        email-verification:
+            enabled: false
+    multiclient:
+        enabled: true
+        allowed-by-default: true
+
+channels:
+    default-modes: +nt
+    registration:
+        enabled: true
+
+history:
+    enabled: true
+    channel-length: 1000
+    client-length: 500
+    autoresize-window: 3d
+    autoreplay-on-join: 100
+    chathistory-maxmessages: 1000
+    znc-maxmessages: 1000
+    tagmsg-storage:
+        default: false
+
+limits:
+    awaylen: 200
+    channellen: 64
+    kicklen: 390
+    topiclen: 390
+    nicklen: 32
+    identlen: 20
+    realnamelen: 300
+    linelen:
+        tags: 8191
+        rest: 2048
+
+datastore:
+    path: /tmp/ironcord-test.db
+    autoupgrade: true
+
+logging:
+    -
+        method: stderr
+        type: "*"
+        level: info

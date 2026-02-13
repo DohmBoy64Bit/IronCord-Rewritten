@@ -1,0 +1,42 @@
+services:
+  test-db:
+    image: postgres:15-alpine
+    container_name: ironcord-test-db
+    environment:
+      POSTGRES_USER: ironcord_test
+      POSTGRES_PASSWORD: ironcord_test_password
+      POSTGRES_DB: ironcord_test
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ironcord_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      - ironcord-test-net
+
+  test-irc:
+    image: ergochat/ergo:latest
+    container_name: ironcord-test-irc
+    ports:
+      - "6668:6667"
+    volumes:
+      - ./tests/config/ergo.yaml:/ircd/ircd.yaml:ro
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 6667 || exit 1"]
+      interval: 2s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      - ironcord-test-net
+
+networks:
+  ironcord-test-net:
+    driver: bridge
+
+volumes:
+  test-db-data:
+  test-irc-data:

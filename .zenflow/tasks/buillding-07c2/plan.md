@@ -168,7 +168,8 @@ Extract database service from v1 into a separate package with repository pattern
 
 ---
 
-### [ ] Step 5: Setup Test Infrastructure with Podman
+### [x] Step 5: Setup Test Infrastructure with Podman
+<!-- chat-id: 9a5b4f84-b802-44b9-a8b2-f12c225d8d0e -->
 Create test infrastructure scripts for running tests against real services.
 
 **Tasks**:
@@ -181,10 +182,10 @@ Create test infrastructure scripts for running tests against real services.
 - Document test execution workflow
 
 **Verification**:
-- [ ] Test services start successfully: `npm run test:services:start`
-- [ ] Health checks pass for PostgreSQL and Ergo IRC
-- [ ] Test services stop cleanly: `npm run test:services:stop`
-- [ ] All existing package tests still pass with test infrastructure
+- [x] Test services start successfully: `npm run test:services:start`
+- [x] Health checks pass for PostgreSQL and Ergo IRC
+- [x] Test services stop cleanly: `npm run test:services:stop`
+- [~] All existing package tests still pass with test infrastructure (Deferred - will be validated in Step 6)
 
 ---
 

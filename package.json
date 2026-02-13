@@ -10,12 +10,19 @@
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "test": "npm test --workspaces --if-present",
+    "test:services:start": "tsx tests/setup-real-services.ts",
+    "test:services:stop": "tsx tests/teardown-real-services.ts",
+    "test:services:restart": "npm run test:services:stop && npm run test:services:start",
+    "test:integration": "npm run test:services:start && npm test --workspaces --if-present && npm run test:services:stop",
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
+    "@types/pg": "^8.10.9",
+    "pg": "^8.11.3",
+    "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   },
   "engines": {
