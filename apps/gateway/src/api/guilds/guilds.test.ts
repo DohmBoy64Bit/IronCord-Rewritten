@@ -209,8 +209,8 @@ describe('Guild API', () => {
 
       expect(response.body.success).toBe(true);
       expect(response.body.guilds).toHaveLength(2);
-      expect(response.body.guilds.map((g: any) => g.name)).toContain('Guild One');
-      expect(response.body.guilds.map((g: any) => g.name)).toContain('Guild Two');
+      expect(response.body.guilds.map((g: { name: string }) => g.name)).toContain('Guild One');
+      expect(response.body.guilds.map((g: { name: string }) => g.name)).toContain('Guild Two');
     });
   });
 
@@ -434,8 +434,8 @@ describe('Guild API', () => {
 
       expect(listChannelsResponse.body.success).toBe(true);
       expect(listChannelsResponse.body.channels).toHaveLength(2); // general + dev
-      expect(listChannelsResponse.body.channels.map((c: any) => c.name)).toContain('general');
-      expect(listChannelsResponse.body.channels.map((c: any) => c.name)).toContain('dev');
+      expect(listChannelsResponse.body.channels.map((c: { name: string }) => c.name)).toContain('general');
+      expect(listChannelsResponse.body.channels.map((c: { name: string }) => c.name)).toContain('dev');
     });
   });
 });
