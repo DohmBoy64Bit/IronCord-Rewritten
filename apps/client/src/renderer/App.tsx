@@ -18,8 +18,15 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     if (user) {
+      const token = useAuthStore.getState().token;
+      if (token) {
+        window.ironcord.connectIRC(user.id, token);
+      }
+
       window.ironcord.getMyGuilds().then((guilds: Guild[]) => {
         setGuilds(guilds);
+      }).catch((err) => {
+        console.error('Failed to load guilds:', err);
       });
 
       window.ironcord.onIRCMessage((msg: Message) => {
