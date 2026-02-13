@@ -21,22 +21,26 @@ function nickColor(nick: string): string {
 
 export const ChannelList: React.FC = () => {
   const user = useAuthStore((state) => state.user);
-  const guilds = useGuildStore((state) => state.guilds) || [];
+  const guilds = useGuildStore((state) => state.guilds);
   const currentGuildId = useGuildStore((state) => state.currentGuildId);
-  const channels = useGuildStore((state) => state.channels) || {};
+  const channels = useGuildStore((state) => state.channels);
   const setChannels = useGuildStore((state) => state.setChannels);
   const currentChannelId = useGuildStore((state) => state.currentChannelId);
   const setCurrentChannel = useGuildStore((state) => state.setCurrentChannel);
-  const presences = usePresenceStore((state) => state.presences) || {};
+  const presences = usePresenceStore((state) => state.presences);
   const [isCreatingChannel, setIsCreatingChannel] = useState(false);
   const [newChannelName, setNewChannelName] = useState('');
   const [showStatusMenu, setShowStatusMenu] = useState(false);
 
-  const currentGuild = guilds.find(g => g.id === currentGuildId);
-  const guildChannels = currentGuildId ? channels[currentGuildId] || [] : [];
+  const guildsList = Array.isArray(guilds) ? guilds : [];
+  const channelsMap = channels && typeof channels === 'object' ? channels : {};
+  const presencesMap = presences && typeof presences === 'object' ? presences : {};
+  
+  const currentGuild = guildsList.find(g => g.id === currentGuildId);
+  const guildChannels = currentGuildId ? channelsMap[currentGuildId] || [] : [];
   const currentChannel = guildChannels.find(c => c.id === currentChannelId);
   const userNick = user?.irc_nick || 'Unknown User';
-  const userPresence = presences[userNick] || 'online';
+  const userPresence = presencesMap[userNick] || 'online';
 
   useEffect(() => {
     if (currentGuildId && !channels[currentGuildId]) {

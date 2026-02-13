@@ -38,9 +38,9 @@ function formatMessageDate(timestamp?: string): string {
 export const Chat: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const currentGuildId = useGuildStore((state) => state.currentGuildId);
-  const channels = useGuildStore((state) => state.channels) || {};
+  const channels = useGuildStore((state) => state.channels);
   const currentChannelId = useGuildStore((state) => state.currentChannelId);
-  const messages = useMessageStore((state) => state.messages) || {};
+  const messages = useMessageStore((state) => state.messages);
   const [input, setInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showMemberList, setShowMemberList] = useState(false);
@@ -50,9 +50,12 @@ export const Chat: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const guildChannels = currentGuildId ? channels[currentGuildId] || [] : [];
+  const channelsMap = channels && typeof channels === 'object' ? channels : {};
+  const messagesMap = messages && typeof messages === 'object' ? messages : {};
+  
+  const guildChannels = currentGuildId ? channelsMap[currentGuildId] || [] : [];
   const currentChannel = guildChannels.find(c => c.id === currentChannelId);
-  const channelMessages = currentChannel?.irc_channel_name ? messages[currentChannel.irc_channel_name] || [] : [];
+  const channelMessages = currentChannel?.irc_channel_name ? messagesMap[currentChannel.irc_channel_name] || [] : [];
   const filteredMessages = searchQuery
     ? channelMessages.filter(m => m.content.toLowerCase().includes(searchQuery.toLowerCase()))
     : channelMessages;

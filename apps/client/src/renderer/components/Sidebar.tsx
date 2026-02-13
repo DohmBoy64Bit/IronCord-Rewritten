@@ -4,12 +4,13 @@ import { useGuildStore } from '../store/guild.store';
 import { CreateGuildModal } from './CreateGuildModal';
 
 export const Sidebar: React.FC = () => {
-  const guilds = useGuildStore((state) => state.guilds) || [];
+  const guilds = useGuildStore((state) => state.guilds);
   const currentGuildId = useGuildStore((state) => state.currentGuildId);
   const setCurrentGuild = useGuildStore((state) => state.setCurrentGuild);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const currentGuild = guilds.find(g => g.id === currentGuildId);
+  const guildsList = Array.isArray(guilds) ? guilds : [];
+  const currentGuild = guildsList.find(g => g.id === currentGuildId);
 
   return (
     <>
@@ -29,7 +30,7 @@ export const Sidebar: React.FC = () => {
 
         <div className="h-[2px] w-8 rounded-full bg-gray-800" />
 
-        {guilds.map((guild) => (
+        {guildsList.map((guild) => (
           <div
             key={guild.id}
             onClick={() => setCurrentGuild(guild.id)}
