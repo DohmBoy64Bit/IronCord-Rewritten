@@ -67,7 +67,7 @@ export class IRCBridgeHandler {
     });
   }
 
-  private async handleConnect(socket: Socket, payload: IRCConnectPayload): Promise<void> {
+  private async handleConnect(socket: Socket, _payload: IRCConnectPayload): Promise<void> {
     const socketData = socket.data as SocketData;
     
     logger.info('WS-IRC-CONNECT', {
