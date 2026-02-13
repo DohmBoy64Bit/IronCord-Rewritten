@@ -215,7 +215,8 @@ Validate all extracted packages meet quality requirements before proceeding.
 
 ---
 
-### [ ] Step 7: Design Unified Dockerfile
+### [x] Step 7: Design Unified Dockerfile
+<!-- chat-id: 365a96b6-863a-432b-b8e5-09754ad2038e -->
 Create multi-stage Dockerfile integrating Gateway + Ergo IRC.
 
 **Tasks**:
@@ -238,9 +239,9 @@ Create multi-stage Dockerfile integrating Gateway + Ergo IRC.
 - Expose ports 3000 (Gateway) and 6667 (IRC)
 
 **Verification**:
-- [ ] Dockerfile builds successfully: `podman build -f infra/podman/Dockerfile.unified .`
-- [ ] Image size is reasonable (<500MB)
-- [ ] All required files present in image
+- [x] Dockerfile builds successfully: `podman build -f infra/podman/Dockerfile.unified .`
+- [x] Image size is reasonable (<500MB)
+- [x] All required files present in image
 
 ---
 

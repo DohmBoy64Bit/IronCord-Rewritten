@@ -1,0 +1,102 @@
+network:
+    name: IronCord-Net
+
+server:
+    name: irc.ironcord.local
+    listeners:
+        ":6667":
+            tls:
+                disabled: true
+    motd: |
+        Welcome to IronCord IRC Server
+        A modern Discord-like experience powered by IRC
+
+# SASL authentication configuration
+accounts:
+    authentication-enabled: true
+    registration:
+        enabled: true
+        allow-before-connect: true
+        email-verification:
+            enabled: false
+    multiclient:
+        enabled: true
+        allowed-by-default: true
+    login-throttling:
+        enabled: true
+        duration: 1m
+        max-attempts: 5
+
+# Channel configuration
+channels:
+    default-modes: +nt
+    registration:
+        enabled: true
+        max-channels-per-account: 100
+
+# CHATHISTORY and message history configuration
+history:
+    enabled: true
+    channel-length: 1000
+    client-length: 500
+    autoresize-window: 7d
+    autoreplay-on-join: 100
+    chathistory-maxmessages: 1000
+    znc-maxmessages: 1000
+    restrictions:
+        expire-time: 30d
+        query-cutoff: 90d
+        grace-period: 1h
+    persistent:
+        enabled: true
+        unregistered-channels: false
+        registered-channels: default
+        direct-messages: default
+    retention:
+        allow-individual-delete: false
+        enable-account-indexing: true
+    tagmsg-storage:
+        default: false
+
+# Limits
+limits:
+    awaylen: 200
+    channellen: 64
+    kicklen: 390
+    topiclen: 390
+    nicklen: 32
+    identlen: 20
+    realnamelen: 300
+    linelen:
+        tags: 8191
+        rest: 2048
+    monitor-entries: 100
+    whowas-entries: 100
+    multiline:
+        max-bytes: 4096
+        max-lines: 100
+
+# Datastore configuration for persistence
+datastore:
+    path: /ergo/data/ircd.db
+    autoupgrade: true
+    mysql:
+        enabled: false
+
+# Logging to stdout/stderr for Docker/Podman
+logging:
+    -
+        method: stderr
+        type: "*"
+        level: info
+
+# IRCv3 capabilities
+fakelag:
+    enabled: false
+
+# SASL mechanisms
+sasl:
+    mechanisms:
+        - PLAIN
+    require-sasl:
+        enabled: false

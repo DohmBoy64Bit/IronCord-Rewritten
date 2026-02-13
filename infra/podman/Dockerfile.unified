@@ -1,0 +1,69 @@
+# ============================================
+# Stage 1: Build Gateway TypeScript
+# ============================================
+FROM node:20-alpine AS builder
+
+WORKDIR /build
+
+# Copy root package files
+COPY package.json package-lock.json* ./
+COPY tsconfig.base.json ./
+
+# Copy all workspace packages
+COPY packages/ ./packages/
+COPY apps/gateway/ ./apps/gateway/
+
+# Install dependencies for all workspaces
+RUN npm ci --workspaces
+
+# Build all packages in dependency order
+RUN npm run build --workspace=@ironcord/shared
+RUN npm run build --workspace=@ironcord/engine
+RUN npm run build --workspace=@ironcord/db
+RUN npm run build --workspace=@ironcord/gateway
+
+# ============================================
+# Stage 2: Production Runtime
+# ============================================
+FROM node:20-alpine
+
+# Install supervisor for process management and dependencies
+RUN apk add --no-cache \
+    supervisor \
+    ca-certificates \
+    tzdata \
+    curl
+
+# Create app directory
+WORKDIR /app
+
+# Copy Gateway production artifacts from builder
+COPY --from=builder /build/package.json /build/package-lock.json* ./
+COPY --from=builder /build/tsconfig.base.json ./
+COPY --from=builder /build/packages/ ./packages/
+COPY --from=builder /build/apps/gateway/ ./apps/gateway/
+
+# Install only production dependencies
+RUN npm ci --workspaces --omit=dev
+
+# Install Ergo IRC v2.14.0
+RUN wget -qO- https://github.com/ergochat/ergo/releases/download/v2.14.0/ergo-2.14.0-linux-x86_64.tar.gz | tar xzf - -C /usr/local/bin --strip-components=1 ergo-2.14.0-linux-x86_64/ergo
+
+# Create Ergo data directory
+RUN mkdir -p /ergo/data
+
+# Copy Ergo configuration
+COPY infra/podman/ergo.yaml /ergo/ircd.yaml
+
+# Copy supervisor configuration
+COPY infra/podman/supervisord.conf /etc/supervisord.conf
+
+# Expose Gateway (3000) and IRC (6667) ports
+EXPOSE 3000 6667
+
+# Health check for both services
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
+
+# Start supervisor to manage both processes
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf", "-n"]
