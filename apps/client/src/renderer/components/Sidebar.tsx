@@ -43,9 +43,9 @@ export const Sidebar: React.FC = () => {
             {currentGuild?.id === guild.id && (
               <div className="absolute -left-3 h-10 w-2 rounded-r-full bg-white" />
             )}
-            <span className="text-sm font-bold uppercase">{guild.name.substring(0, 2).toUpperCase()}</span>
+            <span className="text-sm font-bold uppercase">{(guild.name || 'G').substring(0, 2).toUpperCase()}</span>
             <div className="absolute left-16 z-50 scale-0 rounded-md bg-gray-900 p-2 text-xs font-bold text-white shadow-md transition-all duration-100 group-hover:scale-100">
-              {guild.name}
+              {guild.name || 'Guild'}
             </div>
           </div>
         ))}
