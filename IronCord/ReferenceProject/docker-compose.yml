@@ -1,0 +1,65 @@
+services:
+  gateway:
+    build:
+      context: ./apps/gateway
+      dockerfile: Dockerfile
+    image: ironcord-gateway:latest
+    container_name: ironcord-gateway
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=ironcord
+      - DB_PASSWORD=ironcord_password
+      - DB_NAME=ironcord
+      - IRC_HOST=irc
+      - IRC_PORT=6667
+      - JWT_SECRET=ironcord_secret_key_change_me
+      - FRONTEND_URL=http://localhost:5173
+      - CORS_ORIGIN=http://localhost:5173
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      irc:
+        condition: service_started
+    networks:
+      - ironcord-bridge
+
+  db:
+    image: postgres:15-alpine
+    container_name: ironcord-db
+    environment:
+      - POSTGRES_USER=ironcord
+      - POSTGRES_PASSWORD=ironcord_password
+      - POSTGRES_DB=ironcord
+    ports:
+      - "5432:5432"
+    networks:
+      - ironcord-bridge
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ironcord" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  irc:
+    image: ergochat/ergo:latest
+    container_name: ironcord-irc
+    ports:
+      - "6667:6667"
+    networks:
+      - ironcord-bridge
+    volumes:
+      - irc-data:/ergo/data
+
+networks:
+  ironcord-bridge:
+    driver: bridge
+
+volumes:
+  db-data:
+  irc-data:
