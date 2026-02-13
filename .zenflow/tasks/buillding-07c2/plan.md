@@ -669,6 +669,7 @@ Create comprehensive end-to-end tests for the Electron application.
 ---
 
 ### [ ] Step 22: Phase 4 Validation - Client E2E Tests
+<!-- chat-id: c319cd6a-29fb-4216-90ad-9a300a4afe0c -->
 Validate client implementation with full end-to-end testing.
 
 **Tasks**:
@@ -693,6 +694,7 @@ Validate client implementation with full end-to-end testing.
 ---
 
 ### [ ] Step 23: Full System Integration Testing
+<!-- chat-id: ebf352a1-ccbf-4e59-af0d-9ce802328078 -->
 Run comprehensive integration tests across the entire stack.
 
 **Tasks**:
