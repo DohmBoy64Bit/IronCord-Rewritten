@@ -3,7 +3,7 @@ import request from 'supertest';
 import { createServer } from './server.js';
 
 describe('Server', () => {
-  const app = createServer();
+  const { app } = createServer();
 
   describe('GET /health', () => {
     it('should return healthy status', async () => {

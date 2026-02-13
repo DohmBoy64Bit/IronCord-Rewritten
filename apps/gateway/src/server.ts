@@ -1,4 +1,5 @@
 import express, { Express } from 'express';
+import { createServer as createHTTPServer, Server as HTTPServer } from 'http';
 import cors from 'cors';
 import { config } from './config/env.js';
 import { errorMiddleware, notFoundMiddleware } from './middleware/error.middleware.js';
@@ -6,8 +7,9 @@ import { logger } from '@ironcord/shared';
 import authRouter from './api/auth/index.js';
 import guildsRouter from './api/guilds/index.js';
 
-export function createServer(): Express {
+export function createServer(): { app: Express; httpServer: HTTPServer } {
   const app = express();
+  const httpServer = createHTTPServer(app);
 
   app.use(cors({
     origin: config.nodeEnv === 'production' ? config.clientOrigin : '*',
@@ -32,5 +34,5 @@ export function createServer(): Express {
 
   logger.info('SERVER', { message: 'Express server configured' });
 
-  return app;
+  return { app, httpServer };
 }

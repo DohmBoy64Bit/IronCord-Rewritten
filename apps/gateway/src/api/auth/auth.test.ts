@@ -19,7 +19,8 @@ describe('Auth API', () => {
     await db.connect();
     await db.initializeSchema();
 
-    app = createServer();
+    const serverSetup = createServer();
+    app = serverSetup.app;
     app.locals.db = db;
   });
 

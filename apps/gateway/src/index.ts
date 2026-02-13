@@ -2,6 +2,7 @@ import { createServer } from './server.js';
 import { config } from './config/env.js';
 import { logger } from '@ironcord/shared';
 import { DatabaseService } from '@ironcord/db';
+import { WebSocketServer } from './api/websocket/index.js';
 
 async function startServer(): Promise<void> {
   try {
@@ -12,10 +13,13 @@ async function startServer(): Promise<void> {
     await db.connect();
     logger.info('DATABASE', { message: 'Database connected' });
 
-    const app = createServer();
+    const { app, httpServer } = createServer();
     app.locals.db = db;
 
-    const server = app.listen(config.port, () => {
+    const wsServer = new WebSocketServer(httpServer);
+    app.locals.wsServer = wsServer;
+
+    httpServer.listen(config.port, () => {
       logger.info('GATEWAY_START', {
         port: config.port,
         nodeEnv: config.nodeEnv,
@@ -25,7 +29,8 @@ async function startServer(): Promise<void> {
 
     const shutdown = async () => {
       logger.info('GATEWAY_SHUTDOWN', { message: 'Shutting down gracefully' });
-      server.close(async () => {
+      await wsServer.close();
+      httpServer.close(async () => {
         await db.disconnect();
         logger.info('GATEWAY_SHUTDOWN', { message: 'Server closed' });
         process.exit(0);
