@@ -7,6 +7,7 @@ server:
         ":6667":
             tls:
                 disabled: true
+    max-sendq: 96KB
     motd: |
         Welcome to IronCord IRC Server
         A modern Discord-like experience powered by IRC
@@ -43,18 +44,6 @@ history:
     autoreplay-on-join: 100
     chathistory-maxmessages: 1000
     znc-maxmessages: 1000
-    restrictions:
-        expire-time: 30d
-        query-cutoff: 90d
-        grace-period: 1h
-    persistent:
-        enabled: true
-        unregistered-channels: false
-        registered-channels: default
-        direct-messages: default
-    retention:
-        allow-individual-delete: false
-        enable-account-indexing: true
     tagmsg-storage:
         default: false
 

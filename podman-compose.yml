@@ -1,0 +1,66 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: infra/podman/Dockerfile.unified
+    image: ironcord-unified:latest
+    container_name: ironcord-app
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ironcord
+      DB_PASSWORD: ironcord_password
+      DB_NAME: ironcord
+      IRC_HOST: localhost
+      IRC_PORT: 6667
+      JWT_SECRET: ironcord_secret_key_change_me_in_production
+      FRONTEND_URL: http://localhost:5173
+      CORS_ORIGIN: http://localhost:5173
+    ports:
+      - "3000:3000"
+      - "6667:6667"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ironcord-net
+    volumes:
+      - irc-data:/ergo/data
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    container_name: ironcord-db
+    environment:
+      POSTGRES_USER: ironcord
+      POSTGRES_PASSWORD: ironcord_password
+      POSTGRES_DB: ironcord
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ironcord"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - ironcord-net
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+networks:
+  ironcord-net:
+    driver: bridge
+
+volumes:
+  db-data:
+  irc-data:

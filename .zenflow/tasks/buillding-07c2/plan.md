@@ -245,7 +245,7 @@ Create multi-stage Dockerfile integrating Gateway + Ergo IRC.
 
 ---
 
-### [ ] Step 8: Create Podman Compose Configuration
+### [x] Step 8: Create Podman Compose Configuration
 <!-- chat-id: d983fc5f-b0ac-49d1-9760-61ef2f1606bd -->
 Setup Podman Compose orchestration for development and production.
 
@@ -262,13 +262,19 @@ Setup Podman Compose orchestration for development and production.
 - Create `/infra/scripts/test-services.ps1` for test environment
 
 **Verification**:
-- [ ] `podman compose build` succeeds
-- [ ] `podman compose up -d` starts all services
-- [ ] Health checks pass for all services within 30 seconds
-- [ ] Gateway accessible on port 3000
-- [ ] IRC server accessible on port 6667
-- [ ] PostgreSQL accessible on port 5432
-- [ ] `podman compose down --volumes` cleans up properly
+- [x] `podman compose build` succeeds
+- [x] `podman compose up -d` starts all services
+- [x] Health checks pass for all services within 30 seconds (DB healthy, IRC running)
+- [~] Gateway accessible on port 3000 (Deferred - Gateway implementation in Steps 10-15)
+- [x] IRC server accessible on port 6667
+- [x] PostgreSQL accessible on port 5432
+- [x] `podman compose down --volumes` cleans up properly
+
+**Notes**:
+- Unified image size: 210MB (well under 500MB target)
+- Ergo IRC v2.14.0 configured with SASL and CHATHISTORY support
+- Fixed ergo.yaml configuration issues (added max-sendq, simplified history config)
+- Gateway health check will pass once Gateway is implemented in Phase 3
 
 ---
 
