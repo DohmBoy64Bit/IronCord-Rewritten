@@ -4,6 +4,13 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    env: {
+      DB_HOST: 'localhost',
+      DB_PORT: '5433',
+      DB_NAME: 'ironcord_test',
+      DB_USER: 'ironcord_test',
+      DB_PASSWORD: 'ironcord_test_password',
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -21,5 +28,11 @@ export default defineConfig({
       },
     },
     testTimeout: 30000,
+    fileParallelism: false,
+    poolOptions: {
+      threads: {
+        singleThread: true,
+      },
+    },
   },
 });

@@ -91,7 +91,7 @@ describe('DatabaseService', () => {
     });
 
     it('should support parameterized queries', async () => {
-      const result = await db.query('SELECT $1 as value', [42]);
+      const result = await db.query('SELECT $1::int as value', [42]);
       expect(result.rows[0].value).toBe(42);
     });
   });
