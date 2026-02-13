@@ -1,12 +1,23 @@
 {
-  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "lib": ["ES2022", "DOM"]
+    "target": "ESNext",
+    "module": "ESNext",
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "noImplicitAny": true,
+    "strict": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "outDir": "dist",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM"],
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "out", "**/*.test.ts", "**/*.spec.ts"],
+  "include": ["src/**/*", "forge.config.ts"],
+  "exclude": ["node_modules", "dist", "out", ".vite", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "vite.*.config.ts"],
   "references": [
     { "path": "../../packages/shared" }
   ]
