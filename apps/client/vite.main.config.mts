@@ -3,7 +3,11 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   build: {
     rollupOptions: {
-      external: ['electron'],
+      external: [
+        'electron',
+        'bufferutil',
+        'utf-8-validate',
+      ],
       output: {
         entryFileNames: 'main.js',
       },
