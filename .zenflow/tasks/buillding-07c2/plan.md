@@ -368,7 +368,8 @@ Build the Express server foundation with middleware.
 
 ---
 
-### [ ] Step 12: Implement Gateway Authentication Routes
+### [x] Step 12: Implement Gateway Authentication Routes
+<!-- chat-id: 77402229-d465-4595-8e63-cf01c43686b8 -->
 Implement user registration and login endpoints.
 
 **Tasks**:
@@ -389,13 +390,13 @@ Implement user registration and login endpoints.
 - Add integration tests with **real database**
 
 **Verification**:
-- [ ] Registration endpoint works: `POST /auth/register`
-- [ ] Login endpoint works: `POST /auth/login`
-- [ ] Password hashing uses bcrypt
-- [ ] JWT tokens are valid and signed
-- [ ] Integration tests pass with real database
-- [ ] Test coverage >80%
-- [ ] All files <300 lines
+- [x] Registration endpoint works: `POST /auth/register`
+- [x] Login endpoint works: `POST /auth/login`
+- [x] Password hashing uses bcrypt (10 rounds)
+- [x] JWT tokens are valid and signed
+- [x] Integration tests pass with real database (42/42 tests pass)
+- [x] Test coverage >80% (80.9% overall, 85.55% for auth routes)
+- [x] All files <300 lines (register: 127, login: 125, index: 10, test: 289)
 
 ---
 

@@ -11,15 +11,21 @@ export class DatabaseService {
   private pool: Pool;
 
   constructor(config?: Partial<DatabaseConfig>) {
-    const dbConfig: DatabaseConfig = {
-      user: config?.user || process.env.DB_USER || 'ironcord',
-      host: config?.host || process.env.DB_HOST || 'localhost',
-      database: config?.database || process.env.DB_NAME || 'ironcord',
-      password: config?.password || process.env.DB_PASSWORD || 'ironcord_password',
-      port: config?.port || parseInt(process.env.DB_PORT || '5432', 10),
-    };
+    if (config?.connectionString) {
+      this.pool = new Pool({
+        connectionString: config.connectionString,
+      });
+    } else {
+      const dbConfig: DatabaseConfig = {
+        user: config?.user || process.env.DB_USER || 'ironcord',
+        host: config?.host || process.env.DB_HOST || 'localhost',
+        database: config?.database || process.env.DB_NAME || 'ironcord',
+        password: config?.password || process.env.DB_PASSWORD || 'ironcord_password',
+        port: config?.port || parseInt(process.env.DB_PORT || '5432', 10),
+      };
 
-    this.pool = new Pool(dbConfig);
+      this.pool = new Pool(dbConfig);
+    }
   }
 
   public async query<T extends QueryResultRow = QueryResultRow>(
@@ -74,6 +80,14 @@ export class DatabaseService {
       console.error("Critical Error: Could not read schema file at " + schemaPath);
       throw fsError;
     }
+  }
+
+  public async connect(): Promise<void> {
+    await this.pool.query('SELECT 1');
+  }
+
+  public async disconnect(): Promise<void> {
+    await this.pool.end();
   }
 
   public async close(): Promise<void> {

@@ -3,6 +3,7 @@ import cors from 'cors';
 import { config } from './config/env.js';
 import { errorMiddleware, notFoundMiddleware } from './middleware/error.middleware.js';
 import { logger } from '@ironcord/shared';
+import authRouter from './api/auth/index.js';
 
 export function createServer(): Express {
   const app = express();
@@ -21,6 +22,8 @@ export function createServer(): Express {
       timestamp: new Date().toISOString(),
     });
   });
+
+  app.use('/auth', authRouter);
 
   app.use(notFoundMiddleware);
   app.use(errorMiddleware);

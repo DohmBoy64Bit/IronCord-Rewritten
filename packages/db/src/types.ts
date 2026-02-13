@@ -63,6 +63,7 @@ export interface DatabaseConfig {
   database: string;
   password: string;
   port: number;
+  connectionString?: string;
 }
 
 export function userRowToUser(row: UserRow): User {
