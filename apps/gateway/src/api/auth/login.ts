@@ -96,7 +96,7 @@ export async function loginHandler(
     }
 
     const token = jwt.sign(
-      { userId: user.id },
+      { userId: user.id, email: user.email },
       config.jwtSecret,
       { expiresIn: '24h' }
     );

@@ -30,12 +30,6 @@ export async function registerHandler(
   next: NextFunction
 ): Promise<void> {
   try {
-    logger.info('AUTH-REGISTER-DEBUG', {
-      headers: req.headers,
-      body: req.body,
-      contentType: req.get('content-type'),
-    });
-
     const { email, password, irc_nick } = req.body as RegisterRequest;
 
     if (!email || !password) {
@@ -105,7 +99,7 @@ export async function registerHandler(
     });
 
     const token = jwt.sign(
-      { userId: user.id },
+      { userId: user.id, email: user.email },
       config.jwtSecret,
       { expiresIn: '24h' }
     );
