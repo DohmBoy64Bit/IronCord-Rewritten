@@ -1,0 +1,174 @@
+import { ipcMain, BrowserWindow } from 'electron';
+import { io, Socket } from 'socket.io-client';
+import type { User, Guild, Channel, Message, AuthCredentials, CreateGuildRequest, CreateChannelRequest, HistoryRequest, UserPresence } from '@ironcord/shared/types';
+
+const GATEWAY_URL = process.env.GATEWAY_URL || 'http://localhost:3000';
+
+let socket: Socket | null = null;
+let authToken: string | null = null;
+
+async function httpRequest<T>(
+  method: string,
+  path: string,
+  body?: unknown
+): Promise<T> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (authToken) {
+    headers['Authorization'] = `Bearer ${authToken}`;
+  }
+
+  const response = await fetch(`${GATEWAY_URL}${path}`, {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: response.statusText }));
+    throw new Error(error.message || `HTTP ${response.status}`);
+  }
+
+  return response.json();
+}
+
+function getMainWindow(): BrowserWindow | null {
+  const windows = BrowserWindow.getAllWindows();
+  return windows[0] || null;
+}
+
+function connectSocket(token: string): void {
+  if (socket?.connected) {
+    return;
+  }
+
+  socket = io(GATEWAY_URL, {
+    auth: { token },
+    reconnection: true,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
+  });
+
+  const mainWindow = getMainWindow();
+
+  socket.on('connect', () => {
+    mainWindow?.webContents.send('irc:connected');
+  });
+
+  socket.on('disconnect', () => {
+    mainWindow?.webContents.send('irc:disconnected');
+  });
+
+  socket.on('irc:registered', () => {
+    mainWindow?.webContents.send('irc:registered');
+  });
+
+  socket.on('irc:message', (message: Message) => {
+    mainWindow?.webContents.send('irc:message', message);
+  });
+
+  socket.on('irc:history', (messages: Message[]) => {
+    mainWindow?.webContents.send('irc:history', messages);
+  });
+
+  socket.on('irc:members', (data: { channel: string; members: string[] }) => {
+    mainWindow?.webContents.send('irc:members', data);
+  });
+
+  socket.on('irc:presence', (data: { nick: string; status: string; message?: string }) => {
+    mainWindow?.webContents.send('irc:presence', data);
+  });
+
+  socket.on('error', (error: Error) => {
+    mainWindow?.webContents.send('irc:error', error);
+  });
+}
+
+export function registerIPCHandlers(): void {
+  ipcMain.handle('auth:register', async (_event, data: AuthCredentials & { irc_nick: string }) => {
+    const result = await httpRequest<{ user: User; token: string }>('POST', '/auth/register', data);
+    authToken = result.token;
+    return result;
+  });
+
+  ipcMain.handle('auth:login', async (_event, data: AuthCredentials) => {
+    const result = await httpRequest<{ user: User; token: string }>('POST', '/auth/login', data);
+    authToken = result.token;
+    return result;
+  });
+
+  ipcMain.handle('irc:connect', async (_event, userId: string, token: string) => {
+    authToken = token;
+    connectSocket(token);
+    socket?.emit('irc:connect', { userId });
+  });
+
+  ipcMain.handle('irc:send-message', async (_event, channel: string, message: string) => {
+    socket?.emit('irc:message', { channel, message });
+  });
+
+  ipcMain.handle('irc:join', async (_event, channel: string) => {
+    socket?.emit('irc:join', { channel });
+  });
+
+  ipcMain.handle('irc:part', async (_event, channel: string) => {
+    socket?.emit('irc:part', { channel });
+  });
+
+  ipcMain.handle('irc:request-history', async (_event, request: HistoryRequest) => {
+    socket?.emit('irc:history', request);
+  });
+
+  ipcMain.handle('guilds:get-mine', async () => {
+    return httpRequest<Guild[]>('GET', '/guilds/mine');
+  });
+
+  ipcMain.handle('guilds:get-channels', async (_event, guildId: string) => {
+    return httpRequest<Channel[]>('GET', `/guilds/${guildId}/channels`);
+  });
+
+  ipcMain.handle('guilds:create', async (_event, data: CreateGuildRequest) => {
+    return httpRequest<Guild>('POST', '/guilds', data);
+  });
+
+  ipcMain.handle('guilds:create-channel', async (_event, guildId: string, data: CreateChannelRequest) => {
+    return httpRequest<Channel>('POST', `/guilds/${guildId}/channels`, data);
+  });
+
+  ipcMain.handle('presence:set', async (_event, status: UserPresence) => {
+    socket?.emit('irc:presence', { status });
+  });
+
+  ipcMain.handle('log', async (_event, tag: string, data: unknown) => {
+    console.log(`[${tag}]`, data);
+  });
+
+  ipcMain.handle('window:minimize', async () => {
+    const mainWindow = getMainWindow();
+    mainWindow?.minimize();
+  });
+
+  ipcMain.handle('window:maximize', async () => {
+    const mainWindow = getMainWindow();
+    if (mainWindow?.isMaximized()) {
+      mainWindow.unmaximize();
+    } else {
+      mainWindow?.maximize();
+    }
+  });
+
+  ipcMain.handle('window:close', async () => {
+    const mainWindow = getMainWindow();
+    mainWindow?.close();
+  });
+}
+
+export function disconnectIRC(): void {
+  if (socket?.connected) {
+    socket.disconnect();
+  }
+  socket = null;
+  authToken = null;
+}

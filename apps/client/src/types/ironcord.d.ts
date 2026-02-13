@@ -15,7 +15,7 @@ interface IronCordAPI {
   createGuild: (data: CreateGuildRequest) => Promise<Guild>;
   createChannel: (guildId: string, data: CreateChannelRequest) => Promise<Channel>;
 
-  setPresence: (status: UserPresence['status']) => Promise<void>;
+  setPresence: (status: UserPresence) => Promise<void>;
 
   onIRCRegistered: (callback: () => void) => void;
   onIRCConnected: (callback: () => void) => void;
@@ -24,7 +24,7 @@ interface IronCordAPI {
   onIRCHistory: (callback: (messages: Message[]) => void) => void;
   onIRCMembers: (callback: (data: { channel: string; members: string[] }) => void) => void;
   onIRCError: (callback: (err: Error) => void) => void;
-  onIRCPresence: (callback: (data: UserPresence) => void) => void;
+  onIRCPresence: (callback: (data: { nick: string; status: string; message?: string }) => void) => void;
 
   log: (tag: string, data: unknown) => Promise<void>;
 
