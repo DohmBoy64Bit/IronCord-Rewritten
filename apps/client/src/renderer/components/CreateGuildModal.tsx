@@ -16,7 +16,7 @@ export const CreateGuildModal: React.FC<CreateGuildModalProps> = ({ isOpen, onCl
   const [loading, setLoading] = useState(false);
   const [iconUrl, setIconUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const guilds = useGuildStore((state) => state.guilds);
+  const guilds = useGuildStore((state) => state.guilds) || [];
   const setGuilds = useGuildStore((state) => state.setGuilds);
   const setCurrentGuild = useGuildStore((state) => state.setCurrentGuild);
 

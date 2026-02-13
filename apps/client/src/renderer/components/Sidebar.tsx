@@ -4,12 +4,12 @@ import { useGuildStore } from '../store/guild.store';
 import { CreateGuildModal } from './CreateGuildModal';
 
 export const Sidebar: React.FC = () => {
-  const guilds = useGuildStore((state) => state.guilds);
+  const guilds = useGuildStore((state) => state.guilds) || [];
   const currentGuildId = useGuildStore((state) => state.currentGuildId);
   const setCurrentGuild = useGuildStore((state) => state.setCurrentGuild);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const currentGuild = guilds?.find(g => g.id === currentGuildId);
+  const currentGuild = guilds.find(g => g.id === currentGuildId);
 
   return (
     <>

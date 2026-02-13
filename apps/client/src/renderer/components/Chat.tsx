@@ -38,9 +38,9 @@ function formatMessageDate(timestamp?: string): string {
 export const Chat: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const currentGuildId = useGuildStore((state) => state.currentGuildId);
-  const channels = useGuildStore((state) => state.channels);
+  const channels = useGuildStore((state) => state.channels) || {};
   const currentChannelId = useGuildStore((state) => state.currentChannelId);
-  const messages = useMessageStore((state) => state.messages);
+  const messages = useMessageStore((state) => state.messages) || {};
   const [input, setInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showMemberList, setShowMemberList] = useState(false);
