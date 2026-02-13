@@ -6,10 +6,10 @@ export default defineConfig({
     environment: 'node',
     env: {
       DB_HOST: 'localhost',
-      DB_PORT: '5433',
-      DB_NAME: 'ironcord_test',
-      DB_USER: 'ironcord_test',
-      DB_PASSWORD: 'ironcord_test_password',
+      DB_PORT: '5432',
+      DB_NAME: 'ironcord',
+      DB_USER: 'ironcord',
+      DB_PASSWORD: 'dev_password_123',
     },
     coverage: {
       provider: 'v8',
