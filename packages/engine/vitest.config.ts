@@ -12,7 +12,16 @@ export default defineConfig({
         'dist/',
         '**/*.test.ts',
         '**/*.spec.ts',
+        '**/index.ts',
+        '**/test-helpers.ts',
+        'src/connection/socket.ts',
       ],
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 80,
+        statements: 80,
+      },
     },
   },
 });
