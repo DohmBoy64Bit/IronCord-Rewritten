@@ -19,7 +19,7 @@ async function startServer(): Promise<void> {
     const { app, httpServer } = createServer();
     app.locals.db = db;
 
-    const wsServer = new WebSocketServer(httpServer);
+    const wsServer = new WebSocketServer(httpServer, db);
     app.locals.wsServer = wsServer;
 
     httpServer.listen(config.port, () => {

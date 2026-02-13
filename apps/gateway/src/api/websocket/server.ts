@@ -5,13 +5,14 @@ import { config } from '../../config/env.js';
 import { authenticateSocket } from './middleware/auth.js';
 import { ConnectionHandler } from './handlers/connection.js';
 import { IRCBridgeHandler } from './handlers/irc-bridge.js';
+import type { DatabaseService } from '@ironcord/db';
 
 export class WebSocketServer {
   private io: SocketIOServer;
   private connectionHandler: ConnectionHandler;
   private ircBridgeHandler: IRCBridgeHandler;
 
-  constructor(httpServer: HTTPServer) {
+  constructor(httpServer: HTTPServer, db: DatabaseService) {
     this.io = new SocketIOServer(httpServer, {
       cors: {
         origin: config.nodeEnv === 'production' ? config.clientOrigin : '*',
@@ -21,7 +22,7 @@ export class WebSocketServer {
     });
 
     this.connectionHandler = new ConnectionHandler();
-    this.ircBridgeHandler = new IRCBridgeHandler(this.connectionHandler);
+    this.ircBridgeHandler = new IRCBridgeHandler(this.connectionHandler, db);
 
     this.setupMiddleware();
     this.setupConnectionHandlers();

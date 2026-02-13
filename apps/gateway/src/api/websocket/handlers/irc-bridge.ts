@@ -6,10 +6,11 @@ import { logger } from '@ironcord/shared';
 import { config } from '../../../config/env.js';
 import type { SocketData } from '../middleware/auth.js';
 import type { ConnectionHandler } from './connection.js';
+import { UserRepository } from '@ironcord/db';
+import type { DatabaseService } from '@ironcord/db';
 
 interface IRCConnectPayload {
-  nick: string;
-  password: string;
+  userId: string;
 }
 
 interface IRCMessagePayload {
@@ -35,7 +36,10 @@ interface IRCPresencePayload {
 }
 
 export class IRCBridgeHandler {
-  constructor(private connectionHandler: ConnectionHandler) {}
+  constructor(
+    private connectionHandler: ConnectionHandler,
+    private db: DatabaseService
+  ) {}
 
   public setupHandlers(socket: Socket): void {
     socket.on('irc:connect', (payload: IRCConnectPayload) => {
@@ -63,44 +67,63 @@ export class IRCBridgeHandler {
     });
   }
 
-  private handleConnect(socket: Socket, payload: IRCConnectPayload): void {
+  private async handleConnect(socket: Socket, payload: IRCConnectPayload): Promise<void> {
     const socketData = socket.data as SocketData;
     
     logger.info('WS-IRC-CONNECT', {
       socketId: socket.id,
       userId: socketData.userId,
-      nick: payload.nick,
       message: 'Connecting to IRC server',
     });
 
-    const existingClient = this.connectionHandler.getIRCClient(socket.id);
-    if (existingClient) {
-      logger.warn('WS-IRC-CONNECT', {
-        socketId: socket.id,
-        message: 'IRC client already exists, disconnecting old client',
+    try {
+      const userRepo = new UserRepository(this.db);
+      const user = await userRepo.findById(socketData.userId);
+      
+      if (!user) {
+        logger.error('WS-IRC-CONNECT', {
+          socketId: socket.id,
+          userId: socketData.userId,
+          error: 'User not found',
+        });
+        socket.emit('irc:error', { error: 'User not found' });
+        return;
+      }
+
+      const existingClient = this.connectionHandler.getIRCClient(socket.id);
+      if (existingClient) {
+        logger.warn('WS-IRC-CONNECT', {
+          socketId: socket.id,
+          message: 'IRC client already exists, disconnecting old client',
+        });
+        this.connectionHandler.removeIRCClient(socket.id);
+      }
+
+      const ircConfig: IRCConfig = {
+        host: config.ircHost,
+        port: config.ircPort,
+        nick: user.irc_nick,
+        username: user.irc_nick,
+        realname: user.irc_nick,
+      };
+
+      const ircClient = new IRCClient(ircConfig, {
+        maxRetries: 5,
+        initialDelay: 1000,
+        maxDelay: 30000,
       });
-      this.connectionHandler.removeIRCClient(socket.id);
+
+      this.setupIRCEventForwarding(socket, ircClient);
+
+      ircClient.connect();
+      this.connectionHandler.setIRCClient(socket.id, ircClient);
+    } catch (error) {
+      logger.error('WS-IRC-CONNECT', {
+        socketId: socket.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      socket.emit('irc:error', { error: 'Failed to connect to IRC' });
     }
-
-    const ircConfig: IRCConfig = {
-      host: config.ircHost,
-      port: config.ircPort,
-      nick: payload.nick,
-      username: payload.nick,
-      realname: payload.nick,
-      password: payload.password,
-    };
-
-    const ircClient = new IRCClient(ircConfig, {
-      maxRetries: 5,
-      initialDelay: 1000,
-      maxDelay: 30000,
-    });
-
-    this.setupIRCEventForwarding(socket, ircClient);
-
-    ircClient.connect();
-    this.connectionHandler.setIRCClient(socket.id, ircClient);
   }
 
   private handleMessage(socket: Socket, payload: IRCMessagePayload): void {
