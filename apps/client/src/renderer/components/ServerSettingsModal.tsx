@@ -16,7 +16,8 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({ isOpen
   const [name, setName] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
 
-  const currentGuild = guilds.find(g => g.id === currentGuildId);
+  const guildsList = Array.isArray(guilds) ? guilds : [];
+  const currentGuild = guildsList.find(g => g.id === currentGuildId);
 
   useEffect(() => {
     if (currentGuild) {
