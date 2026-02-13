@@ -106,7 +106,7 @@ export function registerIPCHandlers(): void {
   });
 
   ipcMain.handle('irc:send-message', async (_event, channel: string, message: string) => {
-    socket?.emit('irc:message', { channel, message });
+    socket?.emit('irc:message', { target: channel, message });
   });
 
   ipcMain.handle('irc:join', async (_event, channel: string) => {

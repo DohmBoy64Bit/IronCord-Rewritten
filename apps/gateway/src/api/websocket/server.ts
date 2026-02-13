@@ -6,6 +6,7 @@ import { authenticateSocket } from './middleware/auth.js';
 import { ConnectionHandler } from './handlers/connection.js';
 import { IRCBridgeHandler } from './handlers/irc-bridge.js';
 import type { DatabaseService } from '@ironcord/db';
+import { gatewayEvents } from '../../events.js';
 
 export class WebSocketServer {
   private io: SocketIOServer;
@@ -26,8 +27,37 @@ export class WebSocketServer {
 
     this.setupMiddleware();
     this.setupConnectionHandlers();
+    this.setupInternalEventListeners();
 
     logger.info('WS-SERVER', { message: 'WebSocket server initialized' });
+  }
+
+  private setupInternalEventListeners(): void {
+    gatewayEvents.on('irc:immediate-join', (payload: { userId: string; channel: string }) => {
+      logger.info('WS-INTERNAL', { event: 'irc:immediate-join', ...payload });
+
+      const sockets = Array.from(this.io.sockets.sockets.values());
+      for (const socket of sockets) {
+        if (socket.data?.userId === payload.userId) {
+          const client = this.connectionHandler.getIRCClient(socket.id);
+          if (client && client.ready()) {
+            logger.info('WS-INTERNAL', {
+              action: 'joining_channel',
+              socketId: socket.id,
+              channel: payload.channel
+            });
+            client.join(payload.channel);
+
+            // Fetch history after join
+            setTimeout(() => {
+              if (client.ready()) {
+                client.fetchHistory(payload.channel, 50);
+              }
+            }, 500);
+          }
+        }
+      }
+    });
   }
 
   private setupMiddleware(): void {

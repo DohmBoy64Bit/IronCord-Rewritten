@@ -39,7 +39,7 @@ export class IRCBridgeHandler {
   constructor(
     private connectionHandler: ConnectionHandler,
     private db: DatabaseService
-  ) {}
+  ) { }
 
   public setupHandlers(socket: Socket): void {
     socket.on('irc:connect', (payload: IRCConnectPayload) => {
@@ -69,7 +69,7 @@ export class IRCBridgeHandler {
 
   private async handleConnect(socket: Socket, _payload: IRCConnectPayload): Promise<void> {
     const socketData = socket.data as SocketData;
-    
+
     logger.info('WS-IRC-CONNECT', {
       socketId: socket.id,
       userId: socketData.userId,
@@ -79,7 +79,7 @@ export class IRCBridgeHandler {
     try {
       const userRepo = new UserRepository(this.db);
       const user = await userRepo.findById(socketData.userId);
-      
+
       if (!user) {
         logger.error('WS-IRC-CONNECT', {
           socketId: socket.id,
@@ -195,7 +195,7 @@ export class IRCBridgeHandler {
     }
 
     const limit = payload.limit || 50;
-    
+
     logger.info('WS-IRC-HISTORY', {
       socketId: socket.id,
       channel: payload.channel,
@@ -232,6 +232,7 @@ export class IRCBridgeHandler {
         event: 'registered',
       });
       socket.emit('irc:registered');
+      this.autojoinChannels(socket, ircClient);
     });
 
     ircClient.on('message', (data: IRCMessageData) => {
@@ -308,5 +309,43 @@ export class IRCBridgeHandler {
       });
       socket.emit('irc:reconnect_failed');
     });
+  }
+
+  private async autojoinChannels(socket: Socket, ircClient: IRCClient): Promise<void> {
+    const socketData = socket.data as SocketData;
+    logger.info('WS-IRC-AUTOJOIN', {
+      socketId: socket.id,
+      userId: socketData.userId,
+    });
+
+    try {
+      const result = await this.db.query<{ irc_channel_name: string }>(
+        `SELECT c.irc_channel_name FROM channels c
+         JOIN guilds g ON c.guild_id = g.id
+         JOIN guild_members gm ON g.id = gm.guild_id
+         WHERE gm.user_id = $1`,
+        [socketData.userId]
+      );
+
+      for (const row of result.rows) {
+        logger.debug('WS-IRC-AUTOJOIN', {
+          socketId: socket.id,
+          channel: row.irc_channel_name,
+        });
+        ircClient.join(row.irc_channel_name);
+
+        // Fetch history immediately after joining
+        setTimeout(() => {
+          if (ircClient.ready()) {
+            ircClient.fetchHistory(row.irc_channel_name, 50);
+          }
+        }, 1000);
+      }
+    } catch (error) {
+      logger.error('WS-IRC-AUTOJOIN', {
+        socketId: socket.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
 }

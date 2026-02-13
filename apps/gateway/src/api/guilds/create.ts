@@ -3,6 +3,7 @@ import { Guild, CreateGuildRequest } from '@ironcord/shared';
 import { GuildRepository, ChannelRepository, MemberRepository } from '@ironcord/db';
 import { logger } from '@ironcord/shared';
 import { AuthenticatedRequest } from '../../middleware/auth.middleware.js';
+import { gatewayEvents } from '../../events.js';
 
 interface CreateGuildResponse {
   success: boolean;
@@ -16,7 +17,7 @@ function generateNamespacePrefix(guildName: string): string {
     .replace(/[^a-z0-9]/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
-  
+
   const timestamp = Date.now().toString(36).substring(-4);
   return `${sanitized.substring(0, 20)}-${timestamp}`;
 }
@@ -91,6 +92,12 @@ export async function createGuildHandler(
       userId,
       guildId: guild.id,
       channelId: generalChannel.id,
+    });
+
+    // Trigger immediate JOIN on IRC server via WebSocket gateway
+    gatewayEvents.emit('irc:immediate-join', {
+      userId,
+      channel: generalChannel.irc_channel_name,
     });
 
     res.status(201).json({

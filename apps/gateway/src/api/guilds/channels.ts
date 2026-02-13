@@ -3,6 +3,7 @@ import { Channel, CreateChannelRequest } from '@ironcord/shared';
 import { ChannelRepository, GuildRepository, MemberRepository } from '@ironcord/db';
 import { logger } from '@ironcord/shared';
 import { AuthenticatedRequest } from '../../middleware/auth.middleware.js';
+import { gatewayEvents } from '../../events.js';
 
 interface ListChannelsResponse {
   success: boolean;
@@ -187,6 +188,12 @@ export async function createChannelHandler(
       userId,
       guildId,
       channelId: channel.id,
+    });
+
+    // Trigger immediate JOIN on IRC server via WebSocket gateway
+    gatewayEvents.emit('irc:immediate-join', {
+      userId,
+      channel: channel.irc_channel_name,
     });
 
     res.status(201).json({
