@@ -1,5 +1,6 @@
 import { X, Camera, ChevronRight, Gamepad2, School, Palette, Users, Plus } from 'lucide-react';
 import React, { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useGuildStore } from '../store/guild.store';
 
 interface CreateGuildModalProps {
@@ -83,7 +84,7 @@ export const CreateGuildModal: React.FC<CreateGuildModalProps> = ({ isOpen, onCl
     }
   };
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full max-w-[480px] rounded-2xl bg-gray-900 border border-white/10 shadow-2xl overflow-hidden">
         <div className="p-4 flex justify-end">
@@ -221,4 +222,9 @@ export const CreateGuildModal: React.FC<CreateGuildModalProps> = ({ isOpen, onCl
       </div>
     </div>
   );
+
+  const modalRoot = document.getElementById('modal-root');
+  if (!modalRoot) return null;
+
+  return createPortal(modalContent, modalRoot);
 };

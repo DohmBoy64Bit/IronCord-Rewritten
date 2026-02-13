@@ -270,8 +270,38 @@ export class IRCBridgeHandler {
         event: 'presence',
         nick: data.nick,
         status: data.status,
+        awayMessage: data.message,
       });
-      socket.emit('irc:presence', data);
+
+      // Aggressive mapping: Map 'away' back to specific statuses based on message content
+      // We strip the leading colon which some IRC parsers might leave in the param
+      let status: UserPresence = data.status as any;
+      if (data.status === 'away') {
+        const msg = (data.message || '').replace(/^:/, '').trim().toLowerCase();
+
+        if (msg.includes('idle')) {
+          status = 'idle';
+        } else if (msg.includes('do not disturb') || msg.includes('dnd')) {
+          status = 'dnd';
+        } else if (msg.includes('invisible')) {
+          status = 'invisible';
+        } else {
+          status = 'idle'; // Default fallthrough for away is idle
+        }
+      }
+
+      logger.info('WS-IRC-PRESENCE-MAP', {
+        socketId: socket.id,
+        nick: data.nick,
+        origStatus: data.status,
+        awayMessage: data.message,
+        mappedStatus: status
+      });
+
+      socket.emit('irc:presence', {
+        ...data,
+        status
+      });
     });
 
     ircClient.on('error', (error: Error) => {

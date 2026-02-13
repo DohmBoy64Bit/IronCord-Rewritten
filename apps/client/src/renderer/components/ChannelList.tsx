@@ -6,6 +6,7 @@ import { useGuildStore } from '../store/guild.store';
 import { usePresenceStore } from '../store/presence.store';
 import { ServerSettingsModal } from './ServerSettingsModal';
 import { ChannelContextMenu } from './ChannelContextMenu';
+import { CreateChannelModal } from './CreateChannelModal';
 
 function nickColor(nick: string): string {
   const colors = [
@@ -99,6 +100,7 @@ export const ChannelList: React.FC = () => {
   const statusColors = {
     online: 'bg-emerald-500',
     idle: 'bg-amber-500',
+    away: 'bg-amber-500',
     dnd: 'bg-red-500',
     invisible: 'bg-gray-500',
   };
@@ -108,6 +110,7 @@ export const ChannelList: React.FC = () => {
     idle: 'Idle',
     dnd: 'Do Not Disturb',
     invisible: 'Invisible',
+    away: 'Idle', // Map generic away back to the primary facade status
   };
 
   return (
@@ -163,11 +166,11 @@ export const ChannelList: React.FC = () => {
         >
           <div className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${nickColor(userNick)}`}>
             <span className="text-xs font-bold text-white uppercase">{userNick.charAt(0)}</span>
-            <div className={`absolute right-0 bottom-0 h-3 w-3 rounded-full border-2 border-gray-900 ${isConnected ? statusColors[userPresence as keyof typeof statusColors] : 'bg-red-500'}`} />
+            <div className={`absolute right-0 bottom-0 h-3 w-3 rounded-full border-2 border-gray-900 ${isConnected ? (statusColors[userPresence as keyof typeof statusColors] || statusColors.idle) : 'bg-red-500'}`} />
           </div>
           <div className="flex flex-col truncate">
             <span className="text-xs font-bold text-white truncate">{userNick}</span>
-            <span className="text-[10px] text-gray-400">{isConnected ? statusLabels[userPresence as keyof typeof statusLabels] : 'Disconnected'}</span>
+            <span className="text-[10px] text-gray-400">{isConnected ? (statusLabels[userPresence as keyof typeof statusLabels] || 'Idle') : 'Disconnected'}</span>
           </div>
         </div>
 
@@ -195,8 +198,8 @@ export const ChannelList: React.FC = () => {
                     onClick={() => handleStatusChange(status)}
                     className="flex w-full items-center space-x-2 rounded px-2 py-1.5 text-left text-sm text-gray-300 hover:bg-indigo-500 hover:text-white transition-colors"
                   >
-                    <div className={`h-2 w-2 rounded-full ${statusColors[status]}`} />
-                    <span>{statusLabels[status]}</span>
+                    <div className={`h-2 w-2 rounded-full ${statusColors[status as keyof typeof statusColors]}`} />
+                    <span>{statusLabels[status as keyof typeof statusLabels]}</span>
                   </button>
                 ))}
               </div>
@@ -205,39 +208,11 @@ export const ChannelList: React.FC = () => {
         )}
       </div>
 
-      {isCreatingChannel && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-80 rounded-lg bg-gray-900 border border-emerald-500/20 p-4 shadow-xl">
-            <h3 className="text-lg font-bold text-white mb-2">Create Channel</h3>
-            <form onSubmit={handleCreateChannel}>
-              <input
-                autoFocus
-                type="text"
-                value={newChannelName}
-                onChange={e => setNewChannelName(e.target.value)}
-                className="w-full bg-black/20 text-white border border-gray-700 rounded p-2 mb-4 outline-none focus:border-emerald-500"
-                placeholder="Channel name"
-              />
-              <div className="flex justify-end space-x-2">
-                <button
-                  type="button"
-                  onClick={() => setIsCreatingChannel(false)}
-                  className="px-3 py-1 rounded text-gray-300 hover:bg-gray-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={!newChannelName.trim()}
-                  className="px-3 py-1 rounded bg-emerald-600 text-white hover:bg-emerald-700 font-bold disabled:opacity-50"
-                >
-                  Create
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <CreateChannelModal
+        isOpen={isCreatingChannel}
+        onClose={() => setIsCreatingChannel(false)}
+        guildId={currentGuildId || ''}
+      />
 
       <ServerSettingsModal
         isOpen={showServerSettings}
