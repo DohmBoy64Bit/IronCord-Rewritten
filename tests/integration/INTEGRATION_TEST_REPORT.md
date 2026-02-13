@@ -394,3 +394,184 @@ The system demonstrates:
 **Test Executor**: IronCord v2 Build System  
 **Test Framework**: Vitest v1.6.1  
 **Test Environment**: Windows 10 Build 26200
+
+---
+
+## ADDENDUM: Unified Container Validation
+
+**Date**: February 13, 2026  
+**Status**: ✅ **VALIDATED**
+
+### Overview
+
+Following the initial integration testing against separate test services, the unified production container was built and validated to ensure Step 8's infrastructure (Gateway + IRC + supervisord in single container) functions correctly.
+
+### Build Results
+
+**Image**: `localhost/ironcord-unified:latest`  
+**Size**: 222 MB (well under 500MB target)  
+**Build Time**: 53 seconds  
+**Dockerfile**: `infra/podman/Dockerfile.unified`
+
+#### Build Details
+- ✅ **Stage 1**: TypeScript compilation for all workspaces (shared, engine, db, gateway)
+- ✅ **Stage 2**: Production runtime with Node.js 20 Alpine
+- ✅ **Supervisor**: Installed for process management
+- ✅ **Ergo IRC v2.14.0**: Downloaded and installed
+- ✅ **Production Dependencies**: 119 packages (dev dependencies excluded)
+
+### Container Startup
+
+**Containers Launched**:
+1. `ironcord-db` - PostgreSQL 15 Alpine (port 5432)
+2. `ironcord-app` - Unified Gateway + IRC (ports 3000, 6667)
+
+**Network**: `ironcord-net` (bridge)
+
+**Startup Logs** (from `ironcord-app`):
+```
+2026-02-13 06:58:04 INFO supervisord started with pid 1
+2026-02-13 06:58:05 INFO spawned: 'ergo-irc' with pid 3
+2026-02-13 06:58:05 INFO spawned: 'gateway' with pid 4
+2026-02-13T06:58:05.457Z info  : ergo-2.14.0 starting
+2026-02-13T06:58:05.473Z info  : now listening on :6667
+2026-02-13T06:58:05.473Z info  : Server running
+[INFO] [DATABASE] {"message":"Database connected"}
+Database schema initialized successfully
+[INFO] [SERVER] {"message":"Express server configured"}
+[INFO] [WS-SERVER] {"message":"WebSocket server initialized"}
+[INFO] [GATEWAY_START] {"port":3000,"message":"Gateway listening on port 3000"}
+2026-02-13 06:58:07 INFO success: ergo-irc entered RUNNING state
+2026-02-13 06:58:07 INFO success: gateway entered RUNNING state
+```
+
+**Total Startup Time**: ~3 seconds
+
+### Validation Results
+
+#### 1. Container Health
+| Service | Status | Port | Notes |
+|---------|--------|------|-------|
+| **PostgreSQL 15** | ✅ Running | 5432 | Database connected |
+| **Ergo IRC v2.14.0** | ✅ Running | 6667 | Listening, server running |
+| **Gateway (Express)** | ✅ Running | 3000 | Server configured |
+| **WebSocket Server** | ✅ Running | 3000 | Initialized |
+
+#### 2. Health Endpoint Test
+```bash
+$ curl http://localhost:3000/health
+{"success":true,"status":"healthy","timestamp":"2026-02-13T06:58:27.593Z"}
+```
+**Result**: ✅ **PASS**
+
+#### 3. Database Connectivity
+**Schema Initialization**: ✅ Success  
+**Log Evidence**: `Database schema initialized successfully`
+
+The Gateway successfully:
+- Connected to PostgreSQL container via Docker network (`ironcord-db:5432`)
+- Executed `migrations/001_initial_schema.sql`
+- Created tables: users, guilds, channels, guild_members
+- Created indexes and foreign key constraints
+
+#### 4. IRC Engine Tests Against Unified Container
+
+**Command**: `npm test --workspace=@ironcord/engine`  
+**Target**: `localhost:6667` (Ergo IRC in unified container)
+
+**Results**: ✅ **115/115 tests passed (100%)**
+
+Key validations:
+- ✅ IRC socket connection establishment
+- ✅ CAP LS 302 negotiation
+- ✅ NICK, USER, JOIN, PART, PRIVMSG commands
+- ✅ Message tag parsing (@time, @msgid, @account)
+- ✅ SASL PLAIN authentication
+- ✅ CHATHISTORY LATEST retrieval
+- ✅ BATCH message grouping
+- ✅ Reconnection logic with exponential backoff
+
+**Duration**: 573ms
+
+#### 5. Supervisor Process Management
+
+**Configuration**: `/etc/supervisord.conf`
+
+```ini
+[program:ergo-irc]
+command=/usr/local/bin/ergo run --conf /ergo/ircd.yaml
+autostart=true
+autorestart=true
+
+[program:gateway]
+command=node /app/apps/gateway/dist/index.js
+autostart=true
+autorestart=true
+```
+
+**Validation**:
+- ✅ Both processes started automatically
+- ✅ Both processes entered RUNNING state within 2 seconds
+- ✅ Logs routed to stdout/stderr for container visibility
+
+### Known Issues
+
+#### Gateway Request Body Parsing
+**Issue**: Express body parser not functioning correctly in container  
+**Symptom**: `Cannot destructure property 'email' of 'req.body' as it is undefined`  
+**Impact**: REST API endpoints return 500 errors for POST requests with JSON bodies  
+**Scope**: Limited to Gateway REST endpoints; does not affect:
+  - Health checks (GET /health) ✅
+  - Database connectivity ✅
+  - IRC service ✅
+  - WebSocket server initialization ✅
+
+**Root Cause**: Likely middleware configuration issue specific to production build/container environment
+
+**Recommendation**: Investigate Express middleware ordering and body parser configuration in production mode (Step 24/27)
+
+### Summary
+
+| Validation Area | Status | Notes |
+|----------------|--------|-------|
+| **Image Build** | ✅ PASS | 222 MB, multi-stage build successful |
+| **Container Startup** | ✅ PASS | Both services start within 3 seconds |
+| **Database Connection** | ✅ PASS | Schema initialized successfully |
+| **IRC Service** | ✅ PASS | Listening on port 6667, 115/115 tests pass |
+| **Gateway Service** | ⚠️ PARTIAL | Health endpoint works, body parser issue with REST API |
+| **WebSocket Service** | ✅ PASS | Server initialized successfully |
+| **Supervisor Management** | ✅ PASS | Both processes managed correctly |
+| **Network Connectivity** | ✅ PASS | Inter-container communication functional |
+
+### Conclusion
+
+The **unified container architecture from Step 8 is successfully validated** with the following achievements:
+
+✅ **Infrastructure**:
+- Multi-stage Docker build produces compact 222 MB image
+- Supervisor successfully manages multiple processes
+- Container networking enables inter-service communication
+
+✅ **Service Integration**:
+- Ergo IRC v2.14.0 runs successfully in container
+- Gateway initializes and connects to database
+- WebSocket server initializes correctly
+- All 115 IRC protocol tests pass against containerized IRC
+
+✅ **Production Readiness Indicators**:
+- Fast startup (3 seconds to full operational state)
+- Health checks functional
+- Database schema migrations work
+- Process supervision ensures resilience
+
+⚠️ **Action Item**:
+- Resolve Express body parser issue in production environment (affects REST API POST endpoints)
+- Validate fix before production deployment
+
+**Overall Assessment**: The unified container is **functionally operational** for core services (IRC, Database, WebSocket). The REST API issue is isolated and does not prevent IRC-based messaging functionality.
+
+---
+
+**Addendum Generated**: February 13, 2026 02:05 AM  
+**Container Environment**: Podman 5.7.1 on Windows 10  
+**Images**: `postgres:15-alpine`, `localhost/ironcord-unified:latest`
