@@ -103,6 +103,7 @@ Create the shared utilities and types package as the foundation layer.
 ---
 
 ### [ ] Step 3: Extract `/packages/engine` IRC Protocol Layer
+<!-- chat-id: ec479bba-a0ae-443e-bbf3-b5d89f02a3b4 -->
 Extract IRC protocol implementation from v1 `irc-client.ts` into modular components.
 
 **Tasks**:
