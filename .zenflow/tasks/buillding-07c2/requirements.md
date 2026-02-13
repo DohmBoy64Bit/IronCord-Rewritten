@@ -4,6 +4,38 @@
 
 IronCord v2 represents a complete architectural modernization of the existing Discord-like IRC-backed desktop chat application. The rewrite transitions from a loosely organized monolithic structure to a **strictly modular monorepo** following "Industrial Grade" principles: DRY, strictly typed, and eliminating all "God Files."
 
+---
+
+## 🚨 CRITICAL TESTING MANDATE 🚨
+
+**ZERO TOLERANCE POLICY FOR TEST FAILURES**
+
+This project operates under **STRICT REAL-WORLD TESTING REQUIREMENTS**:
+
+### Absolute Rules (NO EXCEPTIONS):
+1. ✅ **NO MOCK SETUPS ALLOWED**: All tests MUST use real services (real PostgreSQL, real Ergo IRC, real Socket.IO)
+2. ✅ **TEST AFTER EVERY STEP**: Each implementation step is INCOMPLETE until all tests pass
+3. ✅ **100% PASS RATE REQUIRED**: No step proceeds with failing tests, flaky tests, or skipped tests
+4. ✅ **BLOCKING PROGRESSION**: Cannot move to next step if ANY test fails
+5. ✅ **PLAYWRIGHT E2E REQUIRED**: Full frontend testing with real Electron app + real backend services
+6. ✅ **NO ESCAPE HATCHES**: Cannot use `test.skip()`, `test.todo()`, or mark tests as pending
+
+### Test Verification Checklist (EVERY STEP):
+- [ ] All unit tests pass using real PostgreSQL database
+- [ ] All unit tests pass using real Ergo IRC server
+- [ ] All integration tests pass with full service stack running
+- [ ] All Playwright E2E tests pass against real Electron application
+- [ ] Tests run successfully 10 consecutive times (no flaky tests)
+- [ ] Test coverage >80% measured against real code paths
+- [ ] Podman containers for test services start/stop cleanly
+
+### Enforcement:
+**Implementation is NOT complete until the above checklist is 100% checked.**  
+**NO moving to next phase with pending, skipped, or failing tests.**  
+**NO mocked services in test suites - all tests against real infrastructure.**
+
+---
+
 ## Project Context
 
 ### Current State (v1 - Reference Implementation)
@@ -247,22 +279,87 @@ IronCord v2 represents a complete architectural modernization of the existing Di
 - `npm run lint` - ESLint
 
 #### 5.2 Testing Strategy
-**Requirement**: Improve test coverage beyond v1.
+**Requirement**: **CRITICAL** - Real-world testing only, zero tolerance for test failures.
 
-**Unit Tests**:
-- `/packages/engine`: IRC protocol parsing, command generation, state management
-- `/packages/db`: Database service methods, query builders
-- `/apps/gateway`: API route handlers, middleware, WebSocket events
+**🚨 MANDATORY TESTING RULES**:
 
-**Integration Tests**:
-- Gateway + IRC engine message flow
-- Database schema initialization and queries
-- Socket.IO authentication and event routing
+1. **NO MOCK SETUPS ALLOWED**: All tests must use real services (real PostgreSQL, real Ergo IRC, real Socket.IO connections)
+2. **TEST AFTER EVERY STEP**: Each implementation step must include comprehensive tests that pass before proceeding
+3. **ALL TESTS MUST PASS**: No step is considered complete until 100% of tests pass
+4. **BLOCKING REQUIREMENT**: Cannot move to next step if any test fails
+5. **REAL-WORLD INTEGRATION**: Tests must validate actual end-to-end flows, not isolated units with mocks
 
-**E2E Tests** (Playwright):
-- Full user registration → guild creation → message send flow
-- IRC history retrieval on channel join
-- Multi-user presence updates
+**Unit Tests** (Real Services Required):
+- `/packages/engine`: IRC protocol parsing with **real Ergo IRC server connection**
+  - Test SASL authentication against live Ergo instance
+  - Test CHATHISTORY against real message history storage
+  - Test CAP negotiation with actual IRC server responses
+  - Test reconnection logic with real network disconnects
+- `/packages/db`: Database service methods with **real PostgreSQL instance**
+  - Test schema initialization on actual database
+  - Test all CRUD operations with real transactions
+  - Test constraint violations and error handling
+  - Test concurrent access patterns
+- `/apps/gateway`: API route handlers with **real database + IRC connections**
+  - Test auth routes with real bcrypt hashing and JWT signing
+  - Test guild creation with actual database inserts and IRC channel creation
+  - Test WebSocket events with real Socket.IO server and IRC bridge
+
+**Integration Tests** (Full Stack Required):
+- **Gateway + IRC Engine + Database**: Complete message flow
+  - Start real PostgreSQL container
+  - Start real Ergo IRC server
+  - Start Gateway with real connections to both
+  - Test full user registration → IRC SASL auth → message send → database persistence
+- **Socket.IO Authentication Chain**:
+  - Real JWT generation → WebSocket auth → IRC connection establishment
+  - Test token expiration and reconnection flows
+- **CHATHISTORY Integration**:
+  - Send 100 messages to IRC channel
+  - Disconnect and reconnect client
+  - Verify history retrieval matches sent messages
+
+**E2E Tests** (Playwright - Full Application):
+- **Mandatory Setup**: Playwright configured to test against running Electron app
+- **Required Test Suites**:
+  1. **User Registration & Login Flow**:
+     - Register new user → verify database record → login → verify JWT token
+  2. **Guild Creation & Channel Management**:
+     - Create guild → verify IRC namespace creation → create channel → verify IRC channel exists
+  3. **Message Send & Receive**:
+     - Send message from client → verify IRC PRIVMSG → verify database storage → verify recipient receives
+  4. **History Retrieval on Join**:
+     - Pre-populate 50 messages in channel
+     - Join channel → verify CHATHISTORY request → verify all messages loaded in UI
+  5. **Multi-User Presence**:
+     - Two clients connected → User A sets AWAY → verify User B sees presence update
+  6. **Reconnection Resilience**:
+     - Kill IRC server → verify client shows disconnected → restart IRC → verify auto-reconnect
+
+**Test Execution Requirements**:
+- Every test must spin up real services via `podman compose up`
+- Tests must clean up data between runs (reset database, clear IRC state)
+- Tests must include assertions on actual network traffic (not mocked responses)
+- Tests must validate both success and failure paths with real errors
+
+**Test Infrastructure**:
+- `tests/setup-real-services.ts`: Script to start Podman containers for tests
+- `tests/teardown-real-services.ts`: Script to stop and clean up containers
+- `playwright.config.ts`: Configured to launch real Electron app against test services
+- `vitest.config.ts`: Configured with real service connection strings
+
+**Pass Criteria Per Step**:
+- ✅ All unit tests pass (100% success rate)
+- ✅ All integration tests pass (100% success rate)
+- ✅ All E2E tests pass (100% success rate)
+- ✅ No flaky tests (tests must pass 10 consecutive times)
+- ✅ Test coverage >80% for all packages (measured against real code paths)
+
+**Failure Protocol**:
+- ❌ If ANY test fails, implementation is INCOMPLETE
+- ❌ Must fix root cause before proceeding to next step
+- ❌ Cannot skip tests or mark as "TODO"
+- ❌ Cannot use `test.skip()` or similar escape hatches
 
 ### 6. Configuration & Environment
 
@@ -338,17 +435,31 @@ chathistory:
 - **Quick Setup**: Single `podman compose up` command for full stack
 - **Clean Rebuild**: `clean_build.ps1` for resetting Podman environment
 
+### NFR-5: Testing Quality (CRITICAL REQUIREMENT)
+- **Real Services Only**: ZERO mocked services allowed (must use real PostgreSQL, Ergo IRC, Socket.IO)
+- **Test After Every Step**: Implementation incomplete until all tests pass
+- **100% Pass Rate**: No tolerance for failing tests, flaky tests, or skipped tests
+- **Blocking Progression**: Cannot proceed to next implementation step if any test fails
+- **E2E Coverage**: Playwright tests covering all critical user journeys
+- **Integration Testing**: All tests must validate actual service-to-service communication
+- **Test Infrastructure**: Automated Podman container management for test environments
+- **No Escape Hatches**: Cannot use `test.skip()`, `test.todo()`, or similar mechanisms
+
 ## Success Criteria
 
-### Must Have
+### Must Have (ZERO TOLERANCE - ALL REQUIRED)
 1. ✅ All v1 features functional in v2 modular architecture
-2. ✅ Single unified Dockerfile running all services
+2. ✅ Single unified Dockerfile running Gateway + Ergo IRC (PostgreSQL separate)
 3. ✅ Podman Compose orchestration working on Windows
 4. ✅ No files exceeding 300 lines (modular design)
 5. ✅ All packages have explicit boundaries and exports
 6. ✅ Glassmorphism UI preserved exactly as v1
 7. ✅ Full IRCv3 SASL and CHATHISTORY support
-8. ✅ All unit tests passing with >80% coverage
+8. ✅ **ALL TESTS PASSING (100% success rate) - BLOCKING REQUIREMENT**
+9. ✅ **Real-world testing only - NO MOCKS - BLOCKING REQUIREMENT**
+10. ✅ **Playwright E2E tests for frontend - ALL PASSING - BLOCKING REQUIREMENT**
+11. ✅ **Test coverage >80% with real service integration**
+12. ✅ **Each implementation step includes passing tests**
 
 ### Should Have
 1. Improved type safety (eliminate all `any` types)
@@ -364,35 +475,72 @@ chathistory:
 
 ## Migration Strategy
 
+**🚨 CRITICAL**: Each phase MUST include passing tests before proceeding to next phase. NO EXCEPTIONS.
+
 ### Phase 1: Package Extraction (Foundation)
 - Create `/packages/engine` from `apps/gateway/src/irc-client.ts`
 - Create `/packages/db` from `apps/gateway/src/services/db.service.ts`
 - Create `/packages/shared` from existing type definitions
 - Update import paths in gateway and client
+- **TESTING REQUIRED**:
+  - ✅ Unit tests for `/packages/engine` with real Ergo IRC server
+  - ✅ Unit tests for `/packages/db` with real PostgreSQL
+  - ✅ All tests passing (100% success rate)
+  - ✅ Test coverage >80% for all packages
+  - **BLOCKING**: Cannot proceed to Phase 2 until all tests pass
 
 ### Phase 2: Infrastructure Unification
-- Design multi-stage Dockerfile with PostgreSQL, Ergo, Gateway
-- Implement process supervisor (supervisord/PM2)
-- Create `podman-compose.yml` with health checks
+- Design multi-stage Dockerfile with Ergo + Gateway
+- Implement process supervisor (supervisord)
+- Create `podman-compose.yml` with health checks (separate PostgreSQL container)
 - Update `clean_build.ps1` for Podman
+- **TESTING REQUIRED**:
+  - ✅ Integration tests for Docker container startup
+  - ✅ Health check validation (PostgreSQL, Ergo, Gateway all healthy)
+  - ✅ Service connectivity tests (Gateway → PostgreSQL, Gateway → Ergo)
+  - ✅ All tests passing (100% success rate)
+  - **BLOCKING**: Cannot proceed to Phase 3 until all tests pass
 
 ### Phase 3: Gateway Modernization
 - Refactor API routes to use extracted packages
 - Split WebSocket logic into smaller modules
 - Implement comprehensive error handling
 - Add request/response validation
+- **TESTING REQUIRED**:
+  - ✅ Integration tests for all REST API endpoints with real database
+  - ✅ Integration tests for WebSocket events with real IRC connections
+  - ✅ Test auth flow (registration → JWT → Socket.IO auth → IRC SASL)
+  - ✅ Test guild creation (API → DB → IRC channel creation)
+  - ✅ All tests passing (100% success rate)
+  - **BLOCKING**: Cannot proceed to Phase 4 until all tests pass
 
 ### Phase 4: Client Refinement
 - Update imports to use shared types
 - Add missing UI polish from glassmorphism design
 - Implement client-side error boundaries
 - Enhance IPC type safety
+- **TESTING REQUIRED**:
+  - ✅ Playwright E2E tests for full user flows
+  - ✅ Test user registration and login through Electron UI
+  - ✅ Test guild creation and channel navigation
+  - ✅ Test message send/receive with real IRC backend
+  - ✅ Test history retrieval on channel join
+  - ✅ All E2E tests passing (100% success rate)
+  - **BLOCKING**: Cannot proceed to Phase 5 until all E2E tests pass
 
-### Phase 5: Testing & Validation
-- Write unit tests for all packages
-- Implement integration tests
-- Create E2E test suite with Playwright
+### Phase 5: Final Testing & Validation
+- Comprehensive test suite execution (all tests from previous phases)
 - Performance testing and optimization
+- Stress testing (100+ concurrent users, 1000+ messages)
+- Reconnection resilience testing (kill/restart services)
+- **FINAL VALIDATION**:
+  - ✅ ALL unit tests passing (100%)
+  - ✅ ALL integration tests passing (100%)
+  - ✅ ALL E2E tests passing (100%)
+  - ✅ No flaky tests (10 consecutive full test suite runs pass)
+  - ✅ Test coverage >80% across all packages
+  - ✅ Performance benchmarks met (see NFR-2)
+  - **BLOCKING**: Project not complete until ALL tests pass
 
 ## Open Questions & Clarifications Needed
 
