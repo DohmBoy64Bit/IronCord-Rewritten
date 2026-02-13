@@ -23,6 +23,14 @@ export function authMiddleware(
 
   const token = authHeader.split(' ')[1];
 
+  if (!token) {
+    res.status(401).json({
+      success: false,
+      error: 'Missing token',
+    });
+    return;
+  }
+
   try {
     const decoded = jwt.verify(token, config.jwtSecret);
     if (typeof decoded === 'object' && decoded !== null && 'userId' in decoded) {
