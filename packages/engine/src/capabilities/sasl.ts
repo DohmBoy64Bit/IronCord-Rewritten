@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import { logger } from '@ironcord/shared';
 import type { IRCMessage } from '../types.js';
 import { formatAuthenticatePlain, formatAuthenticateResponse, formatCapabilityEnd, formatRegister } from '../protocol/formatter.js';
 
@@ -30,7 +31,7 @@ export class SASLHandler extends EventEmitter {
   public handleAuthenticate(message: IRCMessage): void {
     if (message.params[0] === '+') {
       if (!this.password) {
-        console.warn('[SASL] Server requested AUTHENTICATE, but no password configured');
+        logger.warn('SASL', { message: 'Server requested AUTHENTICATE, but no password configured' });
         this.emit('send', formatCapabilityEnd());
         return;
       }

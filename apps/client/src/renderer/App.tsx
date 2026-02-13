@@ -1,14 +1,14 @@
+import type { Guild, Message } from '@ironcord/shared/types';
 import React, { useState, useEffect } from 'react';
-import { useAuthStore } from './store/auth.store';
-import { useGuildStore } from './store/guild.store';
-import { useMessageStore } from './store/message.store';
+import { ChannelList } from './components/ChannelList';
+import { Chat } from './components/Chat';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
 import { Sidebar } from './components/Sidebar';
-import { ChannelList } from './components/ChannelList';
-import { Chat } from './components/Chat';
 import { TitleBar } from './components/TitleBar';
-import type { Guild, Message } from '@ironcord/shared/types';
+import { useAuthStore } from './store/auth.store';
+import { useGuildStore } from './store/guild.store';
+import { useMessageStore } from './store/message.store';
 
 export const App: React.FC = () => {
   const [view, setView] = useState<'login' | 'register'>('login');

@@ -1,6 +1,6 @@
+import type { User, Guild, Channel, Message, AuthCredentials, CreateGuildRequest, CreateChannelRequest, HistoryRequest, UserPresence } from '@ironcord/shared/types';
 import { ipcMain, BrowserWindow } from 'electron';
 import { io, Socket } from 'socket.io-client';
-import type { User, Guild, Channel, Message, AuthCredentials, CreateGuildRequest, CreateChannelRequest, HistoryRequest, UserPresence } from '@ironcord/shared/types';
 
 const GATEWAY_URL = process.env.GATEWAY_URL || 'http://localhost:3000';
 

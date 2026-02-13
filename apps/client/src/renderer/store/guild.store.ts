@@ -1,5 +1,5 @@
-import { create } from 'zustand';
 import type { Guild, Channel } from '@ironcord/shared/types';
+import { create } from 'zustand';
 
 interface GuildState {
   guilds: Guild[];

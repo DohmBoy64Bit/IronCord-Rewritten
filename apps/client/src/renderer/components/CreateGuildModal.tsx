@@ -1,7 +1,6 @@
+import { X, Camera, ChevronRight, Gamepad2, School, Palette, Users, Plus } from 'lucide-react';
 import React, { useState, useRef } from 'react';
 import { useGuildStore } from '../store/guild.store';
-import { X, Camera, ChevronRight, Gamepad2, School, Palette, Users, Plus } from 'lucide-react';
-import type { Guild } from '@ironcord/shared/types';
 
 interface CreateGuildModalProps {
   isOpen: boolean;

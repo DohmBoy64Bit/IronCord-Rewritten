@@ -1,5 +1,5 @@
-import React from 'react';
 import { Minus, Square, X } from 'lucide-react';
+import React from 'react';
 
 export const TitleBar: React.FC = () => {
   const handleMinimize = () => window.ironcord.windowControls.minimize();

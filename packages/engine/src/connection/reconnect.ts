@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import { logger } from '@ironcord/shared';
 import type { ReconnectOptions, ReconnectEvent } from '../types.js';
 
 export const DEFAULT_RECONNECT_OPTIONS: ReconnectOptions = {
@@ -30,7 +31,10 @@ export class ReconnectHandler extends EventEmitter {
     }
 
     if (this.attempts >= this.options.maxRetries) {
-      console.error(`IRC: Max reconnection attempts (${this.options.maxRetries}) reached`);
+      logger.error('IRC-RECONNECT', { 
+        message: 'Max reconnection attempts reached',
+        maxRetries: this.options.maxRetries 
+      });
       this.emit('reconnect_failed');
       return;
     }
@@ -41,7 +45,12 @@ export class ReconnectHandler extends EventEmitter {
     );
     this.attempts++;
 
-    console.log(`IRC: Reconnecting in ${delay}ms (attempt ${this.attempts}/${this.options.maxRetries})`);
+    logger.info('IRC-RECONNECT', { 
+      message: 'Reconnecting',
+      delay,
+      attempt: this.attempts,
+      maxRetries: this.options.maxRetries 
+    });
     this.emit('reconnecting', { attempt: this.attempts, delay });
 
     this.timer = setTimeout(() => {

@@ -1,5 +1,5 @@
-import { create } from 'zustand';
 import type { UserPresence } from '@ironcord/shared/types';
+import { create } from 'zustand';
 
 interface PresenceState {
   presences: Record<string, UserPresence>;

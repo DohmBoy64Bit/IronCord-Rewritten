@@ -1,5 +1,5 @@
-import { create } from 'zustand';
 import type { Message } from '@ironcord/shared/types';
+import { create } from 'zustand';
 
 interface MessageState {
   messages: Record<string, Message[]>;

@@ -2,7 +2,6 @@ import { test, expect } from './fixtures';
 import {
   generateTestEmail,
   generateTestPassword,
-  waitForElement,
   waitForText,
   sleep,
 } from './helpers';

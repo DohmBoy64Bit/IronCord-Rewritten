@@ -1,6 +1,6 @@
+import { MessageSquare, Plus } from 'lucide-react';
 import React, { useState } from 'react';
 import { useGuildStore } from '../store/guild.store';
-import { MessageSquare, Plus } from 'lucide-react';
 import { CreateGuildModal } from './CreateGuildModal';
 
 export const Sidebar: React.FC = () => {

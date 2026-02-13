@@ -1,5 +1,5 @@
-import { app, BrowserWindow } from 'electron';
 import path from 'path';
+import { app, BrowserWindow } from 'electron';
 import { registerIPCHandlers, disconnectIRC } from './ipc-handlers.js';
 
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;

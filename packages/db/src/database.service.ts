@@ -2,6 +2,7 @@ import { Pool, QueryResult, QueryResultRow, PoolClient } from 'pg';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import { logger } from '@ironcord/shared';
 import { DatabaseConfig } from './types.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -67,17 +68,23 @@ export class DatabaseService {
       for (let i = 0; i < maxRetries; i++) {
         try {
           await this.pool.query(schemaSql);
-          console.log('Database schema initialized successfully');
+          logger.info('DB-INIT', { message: 'Database schema initialized successfully' });
           return;
         } catch (err: unknown) {
           const errorMessage = err instanceof Error ? err.message : String(err);
-          console.error(`Error initializing database schema (Attempt ${i + 1}/${maxRetries}):`, errorMessage);
+          logger.error('DB-INIT', { 
+            message: `Error initializing database schema (Attempt ${i + 1}/${maxRetries})`,
+            error: errorMessage 
+          });
           if (i === maxRetries - 1) throw err;
           await new Promise(resolve => setTimeout(resolve, retryDelay));
         }
       }
     } catch (fsError) {
-      console.error("Critical Error: Could not read schema file at " + schemaPath);
+      logger.error('DB-INIT', { 
+        message: 'Critical Error: Could not read schema file',
+        path: schemaPath 
+      });
       throw fsError;
     }
   }

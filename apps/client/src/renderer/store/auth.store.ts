@@ -1,5 +1,5 @@
-import { create } from 'zustand';
 import type { User } from '@ironcord/shared/types';
+import { create } from 'zustand';
 
 interface AuthState {
   user: User | null;

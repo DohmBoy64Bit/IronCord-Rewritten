@@ -1,9 +1,9 @@
+import type { Channel } from '@ironcord/shared/types';
+import { Hash, Settings, Plus } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../store/auth.store';
 import { useGuildStore } from '../store/guild.store';
 import { usePresenceStore } from '../store/presence.store';
-import { Hash, Settings, Plus } from 'lucide-react';
-import type { Channel } from '@ironcord/shared/types';
 
 function nickColor(nick: string): string {
   const colors = [

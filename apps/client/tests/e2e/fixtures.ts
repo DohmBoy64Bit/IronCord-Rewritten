@@ -1,9 +1,5 @@
-import { test as base, _electron as electron, ElectronApplication, Page } from '@playwright/test';
 import path from 'path';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
+import { test as base, _electron as electron, ElectronApplication, Page } from '@playwright/test';
 
 type TestFixtures = {
   electronApp: ElectronApplication;
@@ -11,7 +7,7 @@ type TestFixtures = {
 };
 
 export const test = base.extend<TestFixtures>({
-  electronApp: async ({}, use) => {
+  electronApp: async (_, use) => {
     const appPath = path.join(__dirname, '../../src/main/index.ts');
 
     const app = await electron.launch({

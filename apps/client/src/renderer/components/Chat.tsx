@@ -1,9 +1,9 @@
+import type { Message } from '@ironcord/shared/types';
+import { Hash, Bell, Pin, Users, Search, Inbox, HelpCircle, PlusCircle, Gift, Sticker, Smile, X } from 'lucide-react';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuthStore } from '../store/auth.store';
 import { useGuildStore } from '../store/guild.store';
 import { useMessageStore } from '../store/message.store';
-import { Hash, Bell, Pin, Users, Search, Inbox, HelpCircle, PlusCircle, Gift, Sticker, Smile, X } from 'lucide-react';
-import type { Message } from '@ironcord/shared/types';
 
 function nickColor(nick: string): string {
   const colors = [
@@ -37,7 +37,7 @@ function formatMessageDate(timestamp?: string): string {
 
 export const Chat: React.FC = () => {
   const { user } = useAuthStore();
-  const { guilds, currentGuildId, channels, currentChannelId } = useGuildStore();
+  const { currentGuildId, channels, currentChannelId } = useGuildStore();
   const { messages } = useMessageStore();
   const [input, setInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,7 +48,6 @@ export const Chat: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const currentGuild = guilds.find(g => g.id === currentGuildId);
   const guildChannels = currentGuildId ? channels[currentGuildId] || [] : [];
   const currentChannel = guildChannels.find(c => c.id === currentChannelId);
   const channelMessages = currentChannel?.irc_channel_name ? messages[currentChannel.irc_channel_name] || [] : [];
