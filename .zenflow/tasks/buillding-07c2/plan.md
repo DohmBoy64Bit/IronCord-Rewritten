@@ -335,6 +335,7 @@ Setup the modular gateway application structure.
 ---
 
 ### [ ] Step 11: Implement Gateway Core Server
+<!-- chat-id: 80fe9ddb-b13d-4f00-ae54-0c5e81d89b1a -->
 Build the Express server foundation with middleware.
 
 **Tasks**:
