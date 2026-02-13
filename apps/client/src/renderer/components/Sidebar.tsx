@@ -21,10 +21,14 @@ export const Sidebar: React.FC = () => {
             const event = new CustomEvent('show-toast', { detail: 'Direct Messages' });
             window.dispatchEvent(event);
           }}
-          className="group relative flex h-12 w-12 cursor-pointer items-center justify-center rounded-3xl bg-gray-800 text-indigo-500 transition-all duration-200 hover:rounded-2xl hover:bg-indigo-600 hover:text-white"
+          className="group relative flex h-12 w-12 cursor-pointer items-center justify-center rounded-3xl bg-gray-800 text-indigo-500 transition-[border-radius,background-color,color] duration-200 shadow-none hover:rounded-2xl hover:bg-indigo-600 hover:text-white"
         >
+          <div className={`absolute -left-4 w-1 rounded-r-full bg-white transition-[height,opacity] duration-200 ${currentGuildId === null
+            ? 'h-10 opacity-100'
+            : 'h-0 opacity-0 group-hover:h-5 group-hover:opacity-100'
+            }`} />
           <MessageSquare size={28} />
-          <div className="absolute left-16 z-50 scale-0 rounded-md bg-gray-900 p-2 text-xs font-bold text-white shadow-md transition-all duration-100 group-hover:scale-100">
+          <div className="absolute left-16 z-50 scale-0 rounded-md bg-gray-900 p-2 text-xs font-bold text-white shadow-md transition-transform duration-100 group-hover:scale-100 origin-left">
             Direct Messages
           </div>
         </div>
@@ -35,17 +39,17 @@ export const Sidebar: React.FC = () => {
           <div
             key={guild.id}
             onClick={() => setCurrentGuild(guild.id)}
-            className={`group relative flex h-12 w-12 cursor-pointer items-center justify-center transition-all duration-200 ${currentGuild?.id === guild.id
+            className={`group relative flex h-12 w-12 cursor-pointer items-center justify-center transition-[border-radius,background-color,color,transform] duration-200 shadow-none ${currentGuild?.id === guild.id
               ? 'rounded-2xl bg-indigo-600 text-white'
               : 'rounded-3xl bg-gray-800 text-gray-400 hover:rounded-2xl hover:bg-indigo-600 hover:text-white'
               }`}
           >
-            <div className={`absolute -left-3 w-2 rounded-r-full bg-white transition-all duration-200 ${currentGuild?.id === guild.id
+            <div className={`absolute -left-4 w-1 rounded-r-full bg-white transition-[height,opacity] duration-200 ${currentGuild?.id === guild.id
               ? 'h-10 opacity-100'
               : 'h-0 opacity-0 group-hover:h-5 group-hover:opacity-100'
               }`} />
             <span className="text-sm font-bold uppercase">{(guild.name || 'G').substring(0, 2).toUpperCase()}</span>
-            <div className="absolute left-16 z-50 scale-0 rounded-md bg-gray-900 p-2 text-xs font-bold text-white shadow-md transition-all duration-100 group-hover:scale-100">
+            <div className="absolute left-16 z-50 scale-0 rounded-md bg-gray-900 p-2 text-xs font-bold text-white shadow-md transition-transform duration-100 group-hover:scale-100 origin-left">
               {guild.name || 'Guild'}
             </div>
           </div>
@@ -53,10 +57,10 @@ export const Sidebar: React.FC = () => {
 
         <div
           onClick={() => setShowCreateModal(true)}
-          className="group relative flex h-12 w-12 cursor-pointer items-center justify-center rounded-3xl bg-gray-800 text-emerald-500 transition-all duration-200 hover:rounded-2xl hover:bg-emerald-600 hover:text-white"
+          className="group relative flex h-12 w-12 cursor-pointer items-center justify-center rounded-3xl bg-gray-800 text-emerald-500 transition-[border-radius,background-color,color] duration-200 shadow-none hover:rounded-2xl hover:bg-emerald-600 hover:text-white"
         >
           <Plus data-testid="Plus" size={28} />
-          <div className="absolute left-16 z-50 scale-0 rounded-md bg-gray-900 p-2 text-xs font-bold text-white shadow-md transition-all duration-100 group-hover:scale-100">
+          <div className="absolute left-16 z-50 scale-0 rounded-md bg-gray-900 p-2 text-xs font-bold text-white shadow-md transition-transform duration-100 group-hover:scale-100 origin-left">
             Add a Server
           </div>
         </div>
