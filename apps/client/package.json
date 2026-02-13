@@ -1,0 +1,24 @@
+{
+  "name": "@ironcord/client",
+  "version": "2.0.0",
+  "type": "module",
+  "private": true,
+  "main": "./dist/main/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "test": "playwright test",
+    "test:watch": "playwright test --ui",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist out *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@ironcord/shared": "*"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.41.0",
+    "typescript": "^5.3.3"
+  }
+}
