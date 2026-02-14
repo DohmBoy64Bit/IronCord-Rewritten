@@ -59,6 +59,11 @@ const StatusIndicator: React.FC<{ status?: string }> = ({ status }) => {
 };
 
 const TypingIndicator: React.FC<{ typingUsers: string[] }> = ({ typingUsers }) => {
+  // Debug log to verify render
+  if (typingUsers.length > 0) {
+    console.log('[TypingIndicator] Rendering for:', typingUsers);
+  }
+
   if (typingUsers.length === 0) return null;
 
   let text = '';
@@ -73,8 +78,10 @@ const TypingIndicator: React.FC<{ typingUsers: string[] }> = ({ typingUsers }) =
   }
 
   return (
-    <div className="absolute bottom-full left-4 mb-2 text-xs font-bold text-gray-400 animate-pulse">
-      {text}
+    <div className="absolute bottom-full left-4 mb-2 z-[999] pointer-events-none">
+      <div className="bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-white animate-pulse border border-white/10 shadow-lg inline-block">
+        {text}
+      </div>
     </div>
   );
 };
@@ -116,10 +123,34 @@ export const Chat: React.FC = () => {
     }
   }, [filteredMessages]);
 
+  // Use a ref to track the current channel for the event handler to avoid stale closures if the callback is long-lived
+  const currentChannelRef = useRef(currentChannel);
+  useEffect(() => {
+    currentChannelRef.current = currentChannel;
+  }, [currentChannel]);
+
   useEffect(() => {
     const handleTypingEvent = (data: { nick: string; target: string; status: 'active' | 'paused' | 'done' }) => {
-      if (!currentChannel || data.target !== currentChannel.irc_channel_name) return;
+      const activeChannel = currentChannelRef.current;
+      console.log('[Chat] Typing raw:', data, '| Active Channel:', activeChannel?.irc_channel_name);
+
+      if (!activeChannel) return;
+
+      // Enhanced Case-Insensitive Matching
+      // Ensure both strings are defined before comparing
+      const eventTarget = (data.target || '').toLowerCase();
+      const currentTarget = (activeChannel.irc_channel_name || '').toLowerCase();
+
+      const isMatch = eventTarget === currentTarget;
+
+      if (!isMatch) {
+        console.log('[Chat] Typing ignored - Channel mismatch:', { event: eventTarget, current: currentTarget });
+        return;
+      }
+
       if (data.nick === user?.irc_nick) return;
+
+      console.log('[Chat] Typing accepted for:', data.nick, data.status);
 
       setTypingUsers(prev => {
         const next = new Map(prev);
@@ -132,6 +163,8 @@ export const Chat: React.FC = () => {
       });
     };
 
+    // Note: If onIRCTyping adds a listener, this might duplicate on re-renders without a cleanup.
+    // Assuming for now it replaces the handler or we rely on the API being improved later.
     window.ironcord.onIRCTyping(handleTypingEvent);
 
     const interval = setInterval(() => {
@@ -140,6 +173,7 @@ export const Chat: React.FC = () => {
         let changed = false;
         const next = new Map(prev);
         for (const [nick, time] of next.entries()) {
+          // Timeout after 6 seconds
           if (now - time > 6000) {
             next.delete(nick);
             changed = true;
@@ -150,7 +184,8 @@ export const Chat: React.FC = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [currentChannel, user?.irc_nick]);
+  }, [user?.irc_nick]); // Removed currentChannel from dependency to avoid re-binding listener frequently -> used Ref instead
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);

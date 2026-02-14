@@ -81,6 +81,10 @@ function connectSocket(token: string): void {
     mainWindow?.webContents.send('irc:presence', data);
   });
 
+  socket.on('irc:typing', (data: { nick: string; target: string; status: 'active' | 'paused' | 'done' }) => {
+    mainWindow?.webContents.send('irc:typing', data);
+  });
+
   socket.on('error', (error: Error) => {
     mainWindow?.webContents.send('irc:error', error);
   });
@@ -174,10 +178,7 @@ export function registerIPCHandlers(): void {
     socket?.emit('irc:typing', { target: channel, status });
   });
 
-  socket?.on('irc:typing', (data: { nick: string; target: string; status: 'active' | 'paused' | 'done' }) => {
-    const mainWindow = getMainWindow();
-    mainWindow?.webContents.send('irc:typing', data);
-  });
+
 
   ipcMain.handle('log', async (_event, tag: string, data: unknown) => {
     console.log(`[${tag}]`, data);
