@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { config } from '../config/env.js';
 
 export interface AuthenticatedRequest extends Request {
-  user?: { userId: string };
+  user?: { userId: string, irc_nick: string };
 }
 
 export function authMiddleware(
@@ -34,7 +34,11 @@ export function authMiddleware(
   try {
     const decoded = jwt.verify(token, config.jwtSecret);
     if (typeof decoded === 'object' && decoded !== null && 'userId' in decoded) {
-      req.user = { userId: (decoded as { userId: string }).userId };
+      const payload = decoded as { userId: string, irc_nick?: string };
+      req.user = {
+        userId: payload.userId,
+        irc_nick: payload.irc_nick || 'Unknown'
+      };
       next();
     } else {
       res.status(401).json({

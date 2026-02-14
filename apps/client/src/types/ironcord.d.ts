@@ -12,6 +12,8 @@ interface IronCordAPI {
 
   getMyGuilds: () => Promise<Guild[]>;
   getChannels: (guildId: string) => Promise<Channel[]>;
+  getDiscoveryGuilds: (query?: string) => Promise<Guild[]>;
+  joinDiscoveryGuild: (guildId: string) => Promise<Guild>;
   createGuild: (data: CreateGuildRequest) => Promise<Guild>;
   updateGuild: (guildId: string, data: Partial<CreateGuildRequest>) => Promise<Guild>;
   createChannel: (guildId: string, data: CreateChannelRequest) => Promise<Channel>;

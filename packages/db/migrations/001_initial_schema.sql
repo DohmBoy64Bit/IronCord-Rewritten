@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS guilds (
     name VARCHAR(100) NOT NULL,
     owner_id UUID REFERENCES users(id) ON DELETE SET NULL,
     irc_namespace_prefix VARCHAR(32) UNIQUE NOT NULL,
+    description TEXT,
+    banner_url VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -4,6 +4,7 @@ import { ChannelList } from './components/ChannelList';
 import { Chat } from './components/Chat';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
+import { Discovery } from './components/Discovery';
 import { Sidebar } from './components/Sidebar';
 import { TitleBar } from './components/TitleBar';
 import { useAuthStore } from './store/auth.store';
@@ -14,6 +15,7 @@ import { usePresenceStore } from './store/presence.store';
 export const App: React.FC = () => {
   const [view, setView] = useState<'login' | 'register'>('login');
   const user = useAuthStore((state) => state.user);
+  const currentView = useGuildStore((state) => state.currentView);
   const setGuilds = useGuildStore((state) => state.setGuilds);
   const addMessage = useMessageStore((state) => state.addMessage);
   const setMessages = useMessageStore((state) => state.setMessages);
@@ -76,8 +78,14 @@ export const App: React.FC = () => {
         ) : (
           <>
             <Sidebar />
-            <ChannelList />
-            <Chat />
+            {currentView === 'discovery' ? (
+              <Discovery />
+            ) : (
+              <>
+                <ChannelList />
+                <Chat />
+              </>
+            )}
           </>
         )}
       </div>

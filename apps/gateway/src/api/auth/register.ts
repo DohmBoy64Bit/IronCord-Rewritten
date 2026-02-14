@@ -103,7 +103,7 @@ export async function registerHandler(
     passwordCache.set(user.id, password);
 
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { userId: user.id, email: user.email, irc_nick: user.irc_nick },
       config.jwtSecret,
       { expiresIn: '24h' }
     );

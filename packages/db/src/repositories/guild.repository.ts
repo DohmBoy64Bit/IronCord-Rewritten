@@ -3,14 +3,14 @@ import { DatabaseService } from '../database.service.js';
 import { GuildRow, CreateGuildInput, guildRowToGuild } from '../types.js';
 
 export class GuildRepository {
-  constructor(private db: DatabaseService) {}
+  constructor(private db: DatabaseService) { }
 
   async create(input: CreateGuildInput): Promise<Guild> {
     const result = await this.db.query<GuildRow>(
-      `INSERT INTO guilds (name, owner_id, irc_namespace_prefix)
-       VALUES ($1, $2, $3)
+      `INSERT INTO guilds (name, owner_id, irc_namespace_prefix, description, banner_url)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [input.name, input.owner_id, input.irc_namespace_prefix]
+      [input.name, input.owner_id, input.irc_namespace_prefix, input.description || null, input.banner_url || null]
     );
     if (!result.rows[0]) {
       throw new Error('Failed to create guild');
@@ -75,5 +75,20 @@ export class GuildRepository {
       [id]
     );
     return result.rows[0]?.exists || false;
+  }
+
+  async findAllPublic(query?: string): Promise<Guild[]> {
+    let sql = 'SELECT * FROM guilds';
+    const params: any[] = [];
+
+    if (query) {
+      sql += ' WHERE name ILIKE $1 OR description ILIKE $1';
+      params.push(`%${query}%`);
+    }
+
+    sql += ' ORDER BY created_at DESC LIMIT 50';
+
+    const result = await this.db.query<GuildRow>(sql, params);
+    return result.rows.map(guildRowToGuild);
   }
 }

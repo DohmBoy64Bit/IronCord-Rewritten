@@ -21,6 +21,8 @@ export interface GuildRow {
   name: string;
   owner_id: string | null;
   irc_namespace_prefix: string;
+  description: string | null;
+  banner_url: string | null;
   created_at: Date;
 }
 
@@ -28,6 +30,8 @@ export interface CreateGuildInput {
   name: string;
   owner_id: string;
   irc_namespace_prefix: string;
+  description?: string;
+  banner_url?: string;
 }
 
 export interface ChannelRow {
@@ -82,6 +86,8 @@ export function guildRowToGuild(row: GuildRow): Guild {
     name: row.name,
     owner_id: row.owner_id || '',
     irc_namespace_prefix: row.irc_namespace_prefix,
+    description: row.description || undefined,
+    banner_url: row.banner_url || undefined,
     created_at: row.created_at.toISOString(),
   };
 }

@@ -13,6 +13,8 @@ const api: IronCordAPI = {
 
   getMyGuilds: () => ipcRenderer.invoke('guilds:get-mine'),
   getChannels: (guildId) => ipcRenderer.invoke('guilds:get-channels', guildId),
+  getDiscoveryGuilds: (query) => ipcRenderer.invoke('guilds:get-discovery', query),
+  joinDiscoveryGuild: (guildId) => ipcRenderer.invoke('guilds:join-discovery', guildId),
   createGuild: (data) => ipcRenderer.invoke('guilds:create', data),
   updateGuild: (guildId, data) => ipcRenderer.invoke('guilds:update', guildId, data),
   createChannel: (guildId, data) => ipcRenderer.invoke('guilds:create-channel', guildId, data),

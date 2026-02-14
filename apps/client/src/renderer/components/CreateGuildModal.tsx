@@ -13,6 +13,8 @@ type Step = 'templates' | 'customize';
 export const CreateGuildModal: React.FC<CreateGuildModalProps> = ({ isOpen, onClose }) => {
   const [step, setStep] = useState<Step>('templates');
   const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [bannerUrl, setBannerUrl] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [iconUrl, setIconUrl] = useState<string | null>(null);
@@ -28,6 +30,8 @@ export const CreateGuildModal: React.FC<CreateGuildModalProps> = ({ isOpen, onCl
   const reset = () => {
     setStep('templates');
     setName('');
+    setDescription('');
+    setBannerUrl('');
     setError('');
     setLoading(false);
   };
@@ -63,7 +67,11 @@ export const CreateGuildModal: React.FC<CreateGuildModalProps> = ({ isOpen, onCl
     setLoading(true);
 
     try {
-      const guild = await window.ironcord.createGuild({ name: name.trim() });
+      const guild = await window.ironcord.createGuild({
+        name: name.trim(),
+        description: description.trim(),
+        banner_url: bannerUrl.trim()
+      });
       setGuilds([...guildsList, guild]);
       setCurrentGuild(guild.id);
 
@@ -86,14 +94,14 @@ export const CreateGuildModal: React.FC<CreateGuildModalProps> = ({ isOpen, onCl
 
   const modalContent = (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-[480px] rounded-2xl bg-gray-900 border border-white/10 shadow-2xl overflow-hidden">
-        <div className="p-4 flex justify-end">
+      <div className="w-full max-w-[480px] rounded-2xl bg-[#313338] border border-white/5 shadow-2xl overflow-hidden">
+        <div className="p-4 flex justify-end absolute top-0 right-0 z-10">
           <button onClick={handleClose} className="text-gray-400 hover:text-white transition-colors">
             <X size={20} />
           </button>
         </div>
 
-        <div className="px-8 pb-10">
+        <div className="px-8 pt-8 pb-10">
           {step === 'templates' ? (
             <div className="animate-in slide-in-from-right-4 duration-300">
               <h2 className="text-2xl font-bold text-white text-center mb-2">Create your Guild</h2>
@@ -114,7 +122,7 @@ export const CreateGuildModal: React.FC<CreateGuildModalProps> = ({ isOpen, onCl
                       <button
                         key={t.id}
                         onClick={() => handleSelectTemplate(t.name)}
-                        className="flex flex-col items-center justify-center p-4 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-all group"
+                        className="flex flex-col items-center justify-center p-4 rounded-xl border border-white/5 bg-[#2b2d31] hover:bg-[#35373c] transition-all group"
                       >
                         <div className={`w-12 h-12 rounded-full ${t.color} flex items-center justify-center mb-2 group-hover:scale-110 transition-transform`}>
                           {t.icon}
@@ -132,7 +140,7 @@ export const CreateGuildModal: React.FC<CreateGuildModalProps> = ({ isOpen, onCl
                       setName('');
                       setStep('customize');
                     }}
-                    className="w-full flex items-center p-3 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-all group"
+                    className="w-full flex items-center p-3 rounded-xl border border-white/5 bg-[#2b2d31] hover:bg-[#35373c] transition-all group"
                   >
                     <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
                       <Plus className="text-white" size={24} />
@@ -144,10 +152,10 @@ export const CreateGuildModal: React.FC<CreateGuildModalProps> = ({ isOpen, onCl
               </div>
             </div>
           ) : (
-            <div className="animate-in slide-in-from-right-4 duration-300">
-              <h2 className="text-2xl font-bold text-white text-center mb-2">Customize your server</h2>
-              <p className="text-gray-400 text-center text-sm mb-8 px-4">
-                By creating a guild, you agree to our Community Guidelines.
+            <div className="animate-in slide-in-from-right-4 duration-300 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
+              <h2 className="text-2xl font-bold text-white text-center mb-2">Customize your guild</h2>
+              <p className="text-gray-400 text-center text-sm mb-6 px-4">
+                Give your new guild a personality with a name and a description.
               </p>
 
               {error && (
@@ -157,7 +165,7 @@ export const CreateGuildModal: React.FC<CreateGuildModalProps> = ({ isOpen, onCl
               )}
 
               <form onSubmit={handleSubmit}>
-                <div className="flex justify-center mb-8">
+                <div className="flex justify-center mb-6">
                   <input
                     type="file"
                     ref={fileInputRef}
@@ -166,25 +174,25 @@ export const CreateGuildModal: React.FC<CreateGuildModalProps> = ({ isOpen, onCl
                     className="hidden"
                   />
                   <div className="relative group cursor-pointer" onClick={handleIconClick}>
-                    <div className="w-20 h-20 rounded-full border-2 border-dashed border-gray-600 flex flex-col items-center justify-center text-gray-500 hover:border-indigo-500 hover:text-indigo-400 transition-all bg-gray-800/50 overflow-hidden">
+                    <div className="w-20 h-20 rounded-full border-2 border-dashed border-gray-600 flex flex-col items-center justify-center text-gray-500 hover:border-indigo-500 hover:text-indigo-400 transition-all bg-[#2b2d31]/50 overflow-hidden">
                       {iconUrl ? (
                         <img src={iconUrl} alt="Server Icon" className="w-full h-full object-cover" />
                       ) : (
                         <>
                           <Camera size={28} className="mb-1" />
-                          <span className="text-[10px] uppercase font-bold text-center px-2">Upload Icon</span>
+                          <span className="text-[10px] uppercase font-bold text-center px-2 leading-tight">Upload Icon</span>
                         </>
                       )}
                     </div>
-                    <div className="absolute top-0 right-0 w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center border-4 border-gray-900 shadow-lg">
+                    <div className="absolute top-0 right-0 w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center border-4 border-[#313338] shadow-lg">
                       <Plus size={14} className="text-white" />
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-4">
                   <div>
-                    <label htmlFor="guild-name" className="block text-[10px] font-bold uppercase text-gray-500 mb-2 tracking-widest pl-1">Guild Name</label>
+                    <label htmlFor="guild-name" className="block text-[10px] font-bold uppercase text-gray-400 mb-2 tracking-widest pl-1">Guild Name</label>
                     <input
                       id="guild-name"
                       autoFocus
@@ -192,24 +200,46 @@ export const CreateGuildModal: React.FC<CreateGuildModalProps> = ({ isOpen, onCl
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="e.g. The Iron Vanguard"
-                      className="w-full h-11 rounded-xl bg-gray-800 p-3 text-sm text-white border border-transparent focus:border-indigo-500 outline-none transition-all placeholder:text-gray-600"
+                      className="w-full h-10 rounded-md bg-[#1e1f22] p-3 text-sm text-white border-0 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-gray-600"
                       required
-                      disabled={loading}
                     />
                   </div>
 
-                  <div className="flex items-center justify-between pt-4">
+                  <div>
+                    <label htmlFor="guild-description" className="block text-[10px] font-bold uppercase text-gray-400 mb-2 tracking-widest pl-1">Description</label>
+                    <textarea
+                      id="guild-description"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="What is your community about?"
+                      className="w-full h-20 rounded-md bg-[#1e1f22] p-3 text-sm text-white border-0 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-gray-600 resize-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="guild-banner" className="block text-[10px] font-bold uppercase text-gray-400 mb-2 tracking-widest pl-1">Banner URL</label>
+                    <input
+                      id="guild-banner"
+                      type="text"
+                      value={bannerUrl}
+                      onChange={(e) => setBannerUrl(e.target.value)}
+                      placeholder="https://example.com/banner.jpg"
+                      className="w-full h-10 rounded-md bg-[#1e1f22] p-3 text-sm text-white border-0 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-gray-600"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between pt-6">
                     <button
                       type="button"
                       onClick={() => setStep('templates')}
-                      className="text-sm font-bold text-gray-400 hover:text-white transition-colors px-4 py-2"
+                      className="text-sm font-medium text-white hover:underline transition-colors px-2 py-2"
                     >
                       Back
                     </button>
                     <button
                       type="submit"
                       disabled={loading || !name.trim()}
-                      className="h-11 rounded-xl bg-indigo-600 px-8 text-sm font-bold text-white transition-all hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-600/20 active:scale-95"
+                      className="h-10 rounded bg-[#5865f2] px-8 text-sm font-medium text-white transition-all hover:bg-[#4752c4] disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
                     >
                       {loading ? 'Creating...' : 'Create Guild'}
                     </button>

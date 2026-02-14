@@ -136,6 +136,17 @@ export function registerIPCHandlers(): void {
     return result.guild;
   });
 
+  ipcMain.handle('guilds:get-discovery', async (_event, query?: string) => {
+    const path = query ? `/guilds/discovery?q=${encodeURIComponent(query)}` : '/guilds/discovery';
+    const result = await httpRequest<{ guilds: Guild[] }>('GET', path);
+    return result.guilds;
+  });
+
+  ipcMain.handle('guilds:join-discovery', async (_event, guildId: string) => {
+    const result = await httpRequest<{ guild: Guild }>('POST', `/guilds/${guildId}/join`);
+    return result.guild;
+  });
+
   ipcMain.handle('guilds:create-channel', async (_event, guildId: string, data: CreateChannelRequest) => {
     const result = await httpRequest<{ channel: Channel }>('POST', `/guilds/${guildId}/channels`, data);
     return result.channel;

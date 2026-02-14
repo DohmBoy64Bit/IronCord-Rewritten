@@ -7,8 +7,10 @@ interface GuildState {
   channels: Record<string, Channel[]>;
   currentChannelId: string | null;
   members: Record<string, string[]>;
+  currentView: 'chat' | 'discovery';
   setGuilds: (guilds: Guild[]) => void;
   setCurrentGuild: (guildId: string | null) => void;
+  setCurrentView: (view: 'chat' | 'discovery') => void;
   setChannels: (guildId: string, channels: Channel[]) => void;
   setCurrentChannel: (channelId: string) => void;
   setMembers: (channel: string, members: string[]) => void;
@@ -24,8 +26,10 @@ export const useGuildStore = create<GuildState>((set) => ({
   channels: {},
   currentChannelId: null,
   members: {},
+  currentView: 'chat',
   setGuilds: (guilds) => set({ guilds }),
-  setCurrentGuild: (guildId) => set({ currentGuildId: guildId, currentChannelId: null }),
+  setCurrentGuild: (guildId) => set({ currentGuildId: guildId, currentChannelId: null, currentView: 'chat' }),
+  setCurrentView: (view) => set({ currentView: view }),
   setChannels: (guildId, channels) =>
     set((state) => ({
       channels: { ...state.channels, [guildId]: channels },
