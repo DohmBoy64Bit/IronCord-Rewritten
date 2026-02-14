@@ -3,6 +3,7 @@ import { config } from './config/env.js';
 import { logger } from '@ironcord/shared';
 import { DatabaseService } from '@ironcord/db';
 import { WebSocketServer } from './api/websocket/index.js';
+import { BotService } from './services/bot.service.js';
 
 async function startServer(): Promise<void> {
   try {
@@ -22,6 +23,10 @@ async function startServer(): Promise<void> {
     const wsServer = new WebSocketServer(httpServer, db);
     app.locals.wsServer = wsServer;
 
+    const botService = new BotService();
+    botService.start();
+    app.locals.botService = botService;
+
     httpServer.listen(config.port, () => {
       logger.info('GATEWAY_START', {
         port: config.port,
@@ -33,6 +38,9 @@ async function startServer(): Promise<void> {
     const shutdown = async () => {
       logger.info('GATEWAY_SHUTDOWN', { message: 'Shutting down gracefully' });
       await wsServer.close();
+      if (app.locals.botService) {
+        app.locals.botService.stop();
+      }
       httpServer.close(async () => {
         await db.disconnect();
         logger.info('GATEWAY_SHUTDOWN', { message: 'Server closed' });

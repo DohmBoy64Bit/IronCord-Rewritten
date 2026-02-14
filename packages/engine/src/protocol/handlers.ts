@@ -16,7 +16,7 @@ export class MessageHandlers {
     private saslHandler: SASLHandler,
     private batchHandler: BatchHandler,
     private config: { nick: string; password?: string }
-  ) {}
+  ) { }
 
   public handleMessage(message: IRCMessage): void {
     switch (message.command) {
@@ -92,20 +92,21 @@ export class MessageHandlers {
     if (subcommand === 'LS') {
       const capsParam = message.params[message.params.length - 1];
       if (!capsParam) return;
-      
-      const availableCaps = capsParam.split(' ');
+
+      const caps = capsParam.split(' ');
+      const availableCapNames = caps.map((c: string) => c.split('=')[0]);
       const requestedCaps = [];
 
-      if (availableCaps.includes('sasl') && this.config.password) requestedCaps.push('sasl');
-      if (availableCaps.includes('echo-message')) requestedCaps.push('echo-message');
-      if (availableCaps.includes('server-time')) requestedCaps.push('server-time');
-      if (availableCaps.includes('message-tags')) requestedCaps.push('message-tags');
-      if (availableCaps.includes('batch')) requestedCaps.push('batch');
-      if (availableCaps.includes('account-tag')) requestedCaps.push('account-tag');
-      if (availableCaps.includes('away-notify')) requestedCaps.push('away-notify');
+      if (availableCapNames.includes('sasl') && this.config.password) requestedCaps.push('sasl');
+      if (availableCapNames.includes('echo-message')) requestedCaps.push('echo-message');
+      if (availableCapNames.includes('server-time')) requestedCaps.push('server-time');
+      if (availableCapNames.includes('message-tags')) requestedCaps.push('message-tags');
+      if (availableCapNames.includes('batch')) requestedCaps.push('batch');
+      if (availableCapNames.includes('account-tag')) requestedCaps.push('account-tag');
+      if (availableCapNames.includes('away-notify')) requestedCaps.push('away-notify');
 
-      if (availableCaps.includes('draft/chathistory') || availableCaps.includes('chathistory')) {
-        requestedCaps.push(availableCaps.includes('draft/chathistory') ? 'draft/chathistory' : 'chathistory');
+      if (availableCapNames.includes('draft/chathistory') || availableCapNames.includes('chathistory')) {
+        requestedCaps.push(availableCapNames.includes('draft/chathistory') ? 'draft/chathistory' : 'chathistory');
       }
 
       if (requestedCaps.length > 0) {
@@ -116,7 +117,7 @@ export class MessageHandlers {
     } else if (subcommand === 'ACK') {
       const ackedCapsParam = message.params[message.params.length - 1];
       if (!ackedCapsParam) return;
-      
+
       const ackedCaps = ackedCapsParam.split(' ');
       this.saslHandler.handleCapabilityAck(ackedCaps);
     }
@@ -162,7 +163,7 @@ export class MessageHandlers {
   private handleJoin(message: IRCMessage): void {
     const channel = message.params[0];
     if (!channel) return;
-    
+
     const nick = extractNickFromPrefix(message.prefix);
 
     if (!this.channelMembers.has(channel)) {
@@ -176,7 +177,7 @@ export class MessageHandlers {
   private handlePart(message: IRCMessage): void {
     const channel = message.params[0];
     if (!channel) return;
-    
+
     const nick = extractNickFromPrefix(message.prefix);
 
     const memberSet = this.channelMembers.get(channel);
@@ -238,7 +239,7 @@ export class MessageHandlers {
   private handlePrivmsg(message: IRCMessage): void {
     const channel = message.params[0];
     if (!channel) return;
-    
+
     const contentParts = message.params.slice(1).join(' ');
     const content = contentParts.startsWith(':') ? contentParts.substring(1) : contentParts;
 

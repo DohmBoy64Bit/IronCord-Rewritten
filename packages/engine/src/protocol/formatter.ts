@@ -42,8 +42,9 @@ export function formatQuit(message?: string): string {
   return message ? `QUIT :${message}` : 'QUIT';
 }
 
-export function formatRegister(nick: string, password: string): string {
-  return `REGISTER ${nick} ${password}`;
+export function formatRegister(nick: string, password: string, email?: string): string {
+  const finalEmail = email || `${nick}@ironcord.local`;
+  return `REGISTER ${nick} ${password} ${finalEmail}`;
 }
 
 export function formatAuthenticatePlain(): string {

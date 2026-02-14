@@ -5,6 +5,7 @@ import { User } from '@ironcord/shared';
 import { UserRepository } from '@ironcord/db';
 import { logger } from '@ironcord/shared';
 import { config } from '../../config/env.js';
+import { passwordCache } from '../../services/password-cache.js';
 
 interface RegisterRequest {
   email: string;
@@ -97,6 +98,9 @@ export async function registerHandler(
       password_hash: passwordHash,
       irc_nick: finalIrcNick,
     });
+
+    // Cache plaintext password temporarily for SASL/IRC registration bridge
+    passwordCache.set(user.id, password);
 
     const token = jwt.sign(
       { userId: user.id, email: user.email },

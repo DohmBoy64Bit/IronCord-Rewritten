@@ -5,6 +5,7 @@ import { User } from '@ironcord/shared';
 import { UserRepository } from '@ironcord/db';
 import { logger } from '@ironcord/shared';
 import { config } from '../../config/env.js';
+import { passwordCache } from '../../services/password-cache.js';
 
 interface LoginRequest {
   email: string;
@@ -100,6 +101,9 @@ export async function loginHandler(
       config.jwtSecret,
       { expiresIn: '24h' }
     );
+
+    // Cache plaintext password temporarily for SASL/IRC registration bridge
+    passwordCache.set(user.id, password);
 
     logger.info('AUTH-LOGIN', {
       phase: 'success',

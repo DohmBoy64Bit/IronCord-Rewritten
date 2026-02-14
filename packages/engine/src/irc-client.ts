@@ -23,7 +23,7 @@ export class IRCClient extends EventEmitter {
     this.config = config;
     this.socket = new SocketWrapper(config.host, config.port);
     this.reconnectHandler = new ReconnectHandler(reconnectOptions);
-    this.saslHandler = new SASLHandler(config.nick, config.password);
+    this.saslHandler = new SASLHandler(config.nick, config.password, config.email);
     this.batchHandler = new BatchHandler();
     this.messageHandlers = new MessageHandlers(
       this,
@@ -128,11 +128,11 @@ export class IRCClient extends EventEmitter {
 
   private handleMessage(message: IRCMessage): void {
     logger.debug('IRC-RECV', { line: message.raw });
-    
+
     if (message.command === '001') {
       this.isRegistered = true;
     }
-    
+
     this.messageHandlers.handleMessage(message);
   }
 

@@ -8,11 +8,13 @@ export interface Config {
   ircPort: number;
   nodeEnv: string;
   clientOrigin: string;
+  botNick: string;
+  botPassword?: string;
 }
 
 function validateEnv(): void {
   const missing = requiredEnvVars.filter((varName) => !process.env[varName]);
-  
+
   if (missing.length > 0) {
     throw new Error(
       `Missing required environment variables: ${missing.join(', ')}`
@@ -35,7 +37,7 @@ export function loadConfig(): Config {
       'ironcord_secret_key_change_me_in_production',
       'your-secure-jwt-secret-here-min-32-chars',
     ];
-    
+
     if (insecureDefaults.includes(jwtSecret)) {
       throw new Error(
         'SECURITY ERROR: Cannot use default JWT_SECRET in production. ' +
@@ -43,8 +45,8 @@ export function loadConfig(): Config {
       );
     }
 
-    if (databaseUrl.includes('ironcord:ironcord@') || 
-        databaseUrl.includes('your-secure-db-password')) {
+    if (databaseUrl.includes('ironcord:ironcord@') ||
+      databaseUrl.includes('your-secure-db-password')) {
       throw new Error(
         'SECURITY ERROR: Cannot use default database credentials in production. ' +
         'Set a secure DATABASE_URL environment variable.'
@@ -60,6 +62,8 @@ export function loadConfig(): Config {
     ircPort: parseInt(process.env.IRC_PORT || '6667', 10),
     nodeEnv: process.env.NODE_ENV || 'development',
     clientOrigin: process.env.CLIENT_ORIGIN || '*',
+    botNick: process.env.BOT_NICK || 'IronCordBot',
+    botPassword: process.env.BOT_PASSWORD || 'ironcord_system_password_123',
   };
 }
 

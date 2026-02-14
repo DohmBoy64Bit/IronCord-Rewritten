@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Channel, CreateChannelRequest } from '@ironcord/shared';
-import { ChannelRepository, GuildRepository, MemberRepository } from '@ironcord/db';
+import { ChannelRepository, GuildRepository, MemberRepository, UserRepository } from '@ironcord/db';
 import { logger } from '@ironcord/shared';
 import { AuthenticatedRequest } from '../../middleware/auth.middleware.js';
 import { gatewayEvents } from '../../events.js';
@@ -190,11 +190,23 @@ export async function createChannelHandler(
       channelId: channel.id,
     });
 
-    // Trigger immediate JOIN on IRC server via WebSocket gateway
-    gatewayEvents.emit('irc:immediate-join', {
-      userId,
+    const userRepo = new UserRepository(req.app.locals.db);
+    const user = await userRepo.findById(userId);
+    const ownerNick = user?.irc_nick || 'Unknown';
+
+    // Trigger bot provisioning first to ensure it's the first in the channel (gets Op)
+    gatewayEvents.emit('irc:provision-channel', {
       channel: channel.irc_channel_name,
+      ownerNick,
     });
+
+    // Delay user join slightly to ensure Bot wins the race for @ status
+    setTimeout(() => {
+      gatewayEvents.emit('irc:immediate-join', {
+        userId,
+        channel: channel.irc_channel_name,
+      });
+    }, 500);
 
     res.status(201).json({
       success: true,

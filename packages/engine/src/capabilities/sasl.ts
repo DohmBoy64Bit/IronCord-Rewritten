@@ -13,11 +13,13 @@ export interface SASLHandlerEvents {
 export class SASLHandler extends EventEmitter {
   private nick: string;
   private password: string | undefined;
+  private email: string | undefined;
 
-  constructor(nick: string, password: string | undefined) {
+  constructor(nick: string, password: string | undefined, email?: string | undefined) {
     super();
     this.nick = nick;
     this.password = password;
+    this.email = email;
   }
 
   public handleCapabilityAck(ackedCaps: string[]): void {
@@ -50,7 +52,7 @@ export class SASLHandler extends EventEmitter {
       case '904':
       case '905':
         if (message.raw.includes('Account does not exist') && this.password) {
-          this.emit('send', formatRegister(this.nick, this.password));
+          this.emit('send', formatRegister(this.nick, this.password, this.email));
         } else {
           this.emit('failure', new Error('SASL Authentication Failed'));
         }

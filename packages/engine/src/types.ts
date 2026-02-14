@@ -5,6 +5,7 @@ export interface IRCConfig {
   username: string;
   realname: string;
   password?: string;
+  email?: string;
 }
 
 export interface ReconnectOptions {
