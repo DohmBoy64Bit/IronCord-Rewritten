@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuthStore } from '../store/auth.store';
 import { useGuildStore } from '../store/guild.store';
 import { useMessageStore } from '../store/message.store';
+import { usePresenceStore } from '../store/presence.store';
 
 function nickColor(nick: string): string {
   const colors = [
@@ -35,6 +36,28 @@ function formatMessageDate(timestamp?: string): string {
   }
 }
 
+const StatusIndicator: React.FC<{ status?: string }> = ({ status }) => {
+  const getStatusColor = () => {
+    switch (status?.toLowerCase()) {
+      case 'online': return 'bg-green-500';
+      case 'idle':
+      case 'away': return 'bg-amber-500';
+      case 'dnd':
+      case 'do not disturb': return 'bg-red-500';
+      case 'invisible': return 'bg-gray-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
+  const isDND = status?.toLowerCase() === 'dnd' || status?.toLowerCase() === 'do not disturb';
+
+  return (
+    <div className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#1e1f22] ${getStatusColor()} flex items-center justify-center`}>
+      {isDND && <div className="h-0.5 w-1.5 bg-[#1e1f22] rounded-full" />}
+    </div>
+  );
+};
+
 export const Chat: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const currentGuildId = useGuildStore((state) => state.currentGuildId);
@@ -42,6 +65,7 @@ export const Chat: React.FC = () => {
   const currentChannelId = useGuildStore((state) => state.currentChannelId);
   const members = useGuildStore((state) => state.members);
   const messages = useMessageStore((state) => state.messages);
+  const presences = usePresenceStore((state) => state.presences);
   const [input, setInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showMemberList, setShowMemberList] = useState(false);
@@ -258,16 +282,22 @@ export const Chat: React.FC = () => {
             <h3 className="text-xs font-bold uppercase text-gray-400 mb-4">Online — {currentMembers.length}</h3>
             <div className="space-y-2">
               <div className="flex items-center space-x-2 p-2 hover:bg-gray-700 rounded-md cursor-pointer transition-colors group">
-                <div className={`flex h-8 w-8 items-center justify-center rounded-full ${nickColor(user?.irc_nick || 'Unknown User')}`}>
-                  <span className="text-xs font-bold text-white uppercase">{user?.irc_nick?.[0] || '?'}</span>
+                <div className="relative">
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-full ${nickColor(user?.irc_nick || 'Unknown User')}`}>
+                    <span className="text-xs font-bold text-white uppercase">{user?.irc_nick?.[0] || '?'}</span>
+                  </div>
+                  <StatusIndicator status={presences[user?.irc_nick || ''] || 'online'} />
                 </div>
                 <span className="text-sm text-gray-300 group-hover:text-white font-medium">{user?.irc_nick || 'Unknown User'} (You)</span>
               </div>
 
               {currentMembers.filter(name => name !== user?.irc_nick).map(name => (
                 <div key={name} className="flex items-center space-x-2 p-2 hover:bg-gray-700 rounded-md cursor-pointer transition-colors group">
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-full ${nickColor(name)}`}>
-                    <span className="text-xs font-bold text-white uppercase">{name[0]}</span>
+                  <div className="relative">
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-full ${nickColor(name)}`}>
+                      <span className="text-xs font-bold text-white uppercase">{name[0]}</span>
+                    </div>
+                    <StatusIndicator status={presences[name] || 'online'} />
                   </div>
                   <span className="text-sm text-gray-400 group-hover:text-white font-medium">{name}</span>
                 </div>

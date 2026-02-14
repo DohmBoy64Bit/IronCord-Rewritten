@@ -166,7 +166,11 @@ export const ChannelList: React.FC = () => {
         >
           <div className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${nickColor(userNick)}`}>
             <span className="text-xs font-bold text-white uppercase">{userNick.charAt(0)}</span>
-            <div className={`absolute right-0 bottom-0 h-3 w-3 rounded-full border-2 border-gray-900 ${isConnected ? (statusColors[userPresence as keyof typeof statusColors] || statusColors.idle) : 'bg-red-500'}`} />
+            <div className={`absolute right-0 bottom-0 h-3 w-3 rounded-full border-2 border-gray-900 ${isConnected ? (statusColors[userPresence as keyof typeof statusColors] || statusColors.idle) : 'bg-red-500'} flex items-center justify-center`}>
+              {isConnected && (String(userPresence).toLowerCase() === 'dnd' || String(userPresence).toLowerCase() === 'do not disturb') && (
+                <div className="h-0.5 w-1 bg-gray-900 rounded-full" />
+              )}
+            </div>
           </div>
           <div className="flex flex-col truncate">
             <span className="text-xs font-bold text-white truncate">{userNick}</span>
