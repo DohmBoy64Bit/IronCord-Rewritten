@@ -6,7 +6,7 @@ import { ReconnectHandler } from './connection/reconnect.js';
 import { SASLHandler } from './capabilities/sasl.js';
 import { BatchHandler } from './capabilities/batch.js';
 import { formatChatHistoryLatest } from './capabilities/chathistory.js';
-import { formatNick, formatUser, formatJoin, formatPart, formatPrivmsg, formatAway, formatTyping } from './protocol/formatter.js';
+import { formatNick, formatUser, formatJoin, formatPart, formatPrivmsg, formatAway, formatTyping, formatReaction } from './protocol/formatter.js';
 import { MessageHandlers } from './protocol/handlers.js';
 
 export class IRCClient extends EventEmitter {
@@ -164,6 +164,12 @@ export class IRCClient extends EventEmitter {
   public typing(target: string, status: 'active' | 'paused' | 'done'): void {
     if (this.socket.isConnected()) {
       this.send(formatTyping(target, status));
+    }
+  }
+
+  public react(target: string, msgId: string, reaction: string): void {
+    if (this.socket.isConnected()) {
+      this.send(formatReaction(target, msgId, reaction));
     }
   }
 

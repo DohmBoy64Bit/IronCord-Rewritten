@@ -167,6 +167,12 @@ export const Chat: React.FC = () => {
     // Assuming for now it replaces the handler or we rely on the API being improved later.
     window.ironcord.onIRCTyping(handleTypingEvent);
 
+    window.ironcord.onIRCReaction((data) => {
+      console.log('[Chat] Reaction received:', data);
+      const addReaction = useMessageStore.getState().addReaction;
+      addReaction(data.target, data.msgId, data.reaction, data.nick);
+    });
+
     const interval = setInterval(() => {
       const now = Date.now();
       setTypingUsers(prev => {
@@ -317,18 +323,78 @@ export const Chat: React.FC = () => {
             )}
 
             {(searchQuery ? filteredMessages : channelMessages).map((msg: Message, i: number) => (
-              <div key={msg.id || i} className="group flex items-start space-x-4 hover:bg-gray-900/20 -mx-4 px-4 py-1">
+              <div key={msg.id || i} className="group flex items-start space-x-4 hover:bg-gray-900/20 -mx-4 px-4 py-1 relative pr-16">
+                {/* Discord-style Hover Action Bar */}
+                <div className="absolute right-4 -top-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center bg-[#313338] rounded-md shadow-sm border border-[#26272D] overflow-hidden z-10">
+                  <button
+                    className="text-gray-400 hover:text-gray-200 hover:bg-[#404249] p-1.5 transition-colors"
+                    title="Add Reaction"
+                    onClick={() => {
+                      const emoji = '👍'; // fast react for now
+                      if (currentChannel && msg.id) {
+                        window.ironcord.react(currentChannel.irc_channel_name, msg.id, emoji);
+                      }
+                    }}
+                  >
+                    <Smile size={18} />
+                  </button>
+                  <button
+                    className="text-gray-400 hover:text-gray-200 hover:bg-[#404249] p-1.5 transition-colors"
+                    title="Reply"
+                  >
+                    <Inbox size={18} className="transform scale-x-[-1]" />
+                  </button>
+                  <button
+                    className="text-gray-400 hover:text-gray-200 hover:bg-[#404249] p-1.5 transition-colors"
+                    title="More"
+                  >
+                    <div className="flex space-x-0.5">
+                      <div className="w-1 h-1 bg-current rounded-full" />
+                      <div className="w-1 h-1 bg-current rounded-full" />
+                      <div className="w-1 h-1 bg-current rounded-full" />
+                    </div>
+                  </button>
+                </div>
+
                 <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full mt-1 ${nickColor(msg.author)}`}>
                   <span className="text-sm font-bold text-white uppercase">{msg.author.charAt(0)}</span>
                 </div>
-                <div className="flex flex-col">
+                <div className="flex flex-col w-full">
                   <div className="flex items-baseline space-x-2">
                     <span className="font-medium text-white hover:underline cursor-pointer">{msg.author}</span>
                     <span className="text-[10px] text-gray-400">
                       {formatMessageDate(msg.timestamp)}
                     </span>
                   </div>
-                  <p className="text-gray-300 leading-snug">{msg.content}</p>
+                  <p className="text-gray-300 leading-snug whitespace-pre-wrap break-words">{msg.content}</p>
+
+                  {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {Object.entries(msg.reactions).map(([emoji, users]) => {
+                        const meReacted = users.includes(user?.irc_nick || '');
+                        return (
+                          <div
+                            key={emoji}
+                            className={`
+                              flex items-center space-x-1.5 px-1.5 py-0.5 rounded-[4px] border cursor-pointer select-none transition-colors
+                              ${meReacted
+                                ? 'bg-[#3b405a] border-[#5865f2] hover:border-[#5865f2]'
+                                : 'bg-[#2b2d31] border-transparent hover:border-[#4e5058] hover:bg-[#313338]'}
+                            `}
+                            onClick={() => {
+                              if (currentChannel && msg.id) {
+                                window.ironcord.react(currentChannel.irc_channel_name, msg.id, emoji);
+                              }
+                            }}
+                            title={users.join(', ')}
+                          >
+                            <span className="min-w-[16px]">{emoji}</span>
+                            <span className={`text-xs font-bold ${meReacted ? 'text-[#dee0fc]' : 'text-gray-400'}`}>{users.length}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

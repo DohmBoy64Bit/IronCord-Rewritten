@@ -59,3 +59,9 @@ export function formatAuthenticateResponse(nick: string, password: string): stri
 export function formatTyping(target: string, status: 'active' | 'paused' | 'done'): string {
   return `@+typing=${status} TAGMSG ${target}`;
 }
+
+export function formatReaction(target: string, msgId: string, reaction: string): string {
+  // IRCv3 +react spec: @+react=EMOJI;reply=MSGID TAGMSG TARGET
+  // We add +reply as a client-only tag fallback because some servers (Ergo) might strip the standard 'reply' tag if not negotiated/supported fully in TAGMSG echo.
+  return `@+react=${reaction};reply=${msgId};+reply=${msgId} TAGMSG ${target}`;
+}

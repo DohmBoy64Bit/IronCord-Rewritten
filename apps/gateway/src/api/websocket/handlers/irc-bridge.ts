@@ -76,6 +76,10 @@ export class IRCBridgeHandler {
     socket.on('irc:typing', (payload: IRCTypingPayload) => {
       this.handleTyping(socket, payload);
     });
+
+    socket.on('irc:react', (payload: { target: string; msgId: string; reaction: string }) => {
+      this.handleReaction(socket, payload);
+    });
   }
 
   private async handleConnect(socket: Socket, _payload: IRCConnectPayload): Promise<void> {
@@ -207,6 +211,13 @@ export class IRCBridgeHandler {
     const ircClient = this.connectionHandler.getIRCClient(socket.id);
     if (ircClient && ircClient.ready()) {
       ircClient.typing(payload.target, payload.status);
+    }
+  }
+
+  private handleReaction(socket: Socket, payload: { target: string; msgId: string; reaction: string }): void {
+    const ircClient = this.connectionHandler.getIRCClient(socket.id);
+    if (ircClient && ircClient.ready()) {
+      ircClient.react(payload.target, payload.msgId, payload.reaction);
     }
   }
 

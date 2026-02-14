@@ -85,6 +85,10 @@ function connectSocket(token: string): void {
     mainWindow?.webContents.send('irc:typing', data);
   });
 
+  socket.on('irc:reaction', (data: { nick: string; target: string; msgId: string; reaction: string }) => {
+    mainWindow?.webContents.send('irc:reaction', data);
+  });
+
   socket.on('error', (error: Error) => {
     mainWindow?.webContents.send('irc:error', error);
   });
@@ -176,6 +180,10 @@ export function registerIPCHandlers(): void {
 
   ipcMain.handle('irc:send-typing', async (_event, channel: string, status: 'active' | 'paused' | 'done') => {
     socket?.emit('irc:typing', { target: channel, status });
+  });
+
+  ipcMain.handle('irc:react', async (_event, target: string, msgId: string, reaction: string) => {
+    socket?.emit('irc:react', { target, msgId, reaction });
   });
 
 

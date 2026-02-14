@@ -51,6 +51,10 @@ const api: IronCordAPI = {
   onIRCTyping: (callback) => {
     ipcRenderer.on('irc:typing', (_event, data) => callback(data));
   },
+  react: (target, msgId, reaction) => ipcRenderer.invoke('irc:react', target, msgId, reaction),
+  onIRCReaction: (callback) => {
+    ipcRenderer.on('irc:reaction', (_event, data) => callback(data));
+  },
 
   log: (tag, data) => ipcRenderer.invoke('log', tag, data),
 

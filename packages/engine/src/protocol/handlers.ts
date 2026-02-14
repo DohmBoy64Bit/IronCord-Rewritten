@@ -260,6 +260,8 @@ export class MessageHandlers {
     const target = message.params[0];
     if (!target) return;
 
+    // logger.debug('IRC-TAGS', { tags: message.tags, prefix: message.prefix });
+
     const typingTag = message.tags['+typing'];
     if (typingTag) {
       const nick = extractNickFromPrefix(message.prefix);
@@ -268,6 +270,20 @@ export class MessageHandlers {
         target,
         status: typingTag as 'active' | 'paused' | 'done'
       } as IRCTyping);
+    }
+
+    const reactTag = message.tags['+react'];
+    // Use +reply (client-only tag) as fallback if reply is stripped
+    const replyTag = message.tags['reply'] || message.tags['+reply'] || message.tags['msgid'];
+
+    if (reactTag && replyTag) {
+      const nick = extractNickFromPrefix(message.prefix);
+      this.emitter.emit('reaction', {
+        nick,
+        target,
+        msgId: replyTag,
+        reaction: reactTag
+      });
     }
   }
 }

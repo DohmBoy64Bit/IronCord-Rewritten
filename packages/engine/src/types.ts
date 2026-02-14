@@ -47,21 +47,29 @@ export interface ReconnectEvent {
   delay: number;
 }
 
-export type IRCClientEvents = {
-  registered: () => void;
-  message: (data: IRCMessageData) => void;
-  history: (messages: IRCMessageData[]) => void;
-  members: (data: IRCMembers) => void;
-  presence: (data: IRCPresence) => void;
-  error: (error: Error) => void;
-  close: () => void;
-  reconnecting: (event: ReconnectEvent) => void;
-  reconnect_failed: () => void;
-  typing: (data: IRCTyping) => void;
-};
-
 export interface IRCTyping {
   nick: string;
   target: string;
   status: 'active' | 'paused' | 'done';
+}
+
+export interface IRCReaction {
+  nick: string;
+  target: string; // The channel or user
+  msgId: string; // The ID of the message being reacted to
+  reaction: string; // The emoji char
+}
+
+export interface IRCClientEvents {
+  'registered': () => void;
+  'message': (data: IRCMessageData) => void;
+  'history': (messages: IRCMessageData[]) => void;
+  'members': (data: IRCMembers) => void;
+  'error': (err: Error) => void;
+  'close': () => void;
+  'reconnecting': (event: ReconnectEvent) => void;
+  'reconnect_failed': () => void;
+  'presence': (data: IRCPresence) => void;
+  'typing': (data: IRCTyping) => void;
+  'reaction': (data: IRCReaction) => void;
 }

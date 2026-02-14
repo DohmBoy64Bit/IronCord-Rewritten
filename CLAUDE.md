@@ -107,9 +107,8 @@ IronCord v2/
 1. **Industrial Grade**: DRY, strictly typed, modular
 2. **File Size Limit**: Max 300 lines per file (excluding tests)
 3. **No God Files**: Logic must be split into focused modules
-4. **Test Coverage**: >80% for engine/db, >90% for shared
 5. **Type Safety**: No `any` types allowed
-6. **Real Service Testing**: All tests use real PostgreSQL and Ergo IRC
+
 
 ## Environment Variables
 

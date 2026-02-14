@@ -13,6 +13,7 @@ export interface Message {
   content: string;
   account?: string;
   timestamp?: string;
+  reactions?: Record<string, string[]>; // emoji -> [nicks]
 }
 
 export interface HistoryRequest {

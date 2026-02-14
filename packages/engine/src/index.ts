@@ -9,4 +9,5 @@ export type {
   ReconnectEvent,
   IRCClientEvents,
   IRCTyping,
+  IRCReaction,
 } from './types.js';
