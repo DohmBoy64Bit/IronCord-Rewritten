@@ -30,6 +30,8 @@ interface IronCordAPI {
   onIRCMembers: (callback: (data: { channel: string; members: string[] }) => void) => void;
   onIRCError: (callback: (err: Error) => void) => void;
   onIRCPresence: (callback: (data: { nick: string; status: string; message?: string }) => void) => void;
+  sendTyping: (channel: string, status: 'active' | 'paused' | 'done') => Promise<void>;
+  onIRCTyping: (callback: (data: { nick: string; target: string; status: 'active' | 'paused' | 'done' }) => void) => void;
 
   log: (tag: string, data: unknown) => Promise<void>;
 

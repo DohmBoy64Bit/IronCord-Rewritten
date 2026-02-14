@@ -55,3 +55,7 @@ export function formatAuthenticateResponse(nick: string, password: string): stri
   const authStr = `${nick}\0${nick}\0${password}`;
   return `AUTHENTICATE ${Buffer.from(authStr).toString('base64')}`;
 }
+
+export function formatTyping(target: string, status: 'active' | 'paused' | 'done'): string {
+  return `@+typing=${status} TAGMSG ${target}`;
+}

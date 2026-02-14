@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
 import { IRCClient } from '@ironcord/engine';
-import type { IRCMessageData, IRCMembers, IRCPresence, ReconnectEvent } from '@ironcord/engine';
+import type { IRCMessageData, IRCMembers, IRCPresence, ReconnectEvent, IRCTyping } from '@ironcord/engine';
 import type { UserPresence } from '@ironcord/shared/types';
 import { logger } from '@ironcord/shared';
 
@@ -60,6 +60,10 @@ export class IRCEventForwarder {
             }
 
             socket.emit('irc:presence', { ...data, status });
+        });
+
+        ircClient.on('typing', (data: IRCTyping) => {
+            socket.emit('irc:typing', data);
         });
 
         ircClient.on('error', (error: Error) => {

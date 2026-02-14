@@ -47,6 +47,10 @@ const api: IronCordAPI = {
   onIRCPresence: (callback) => {
     ipcRenderer.on('irc:presence', (_event, data) => callback(data));
   },
+  sendTyping: (channel, status) => ipcRenderer.invoke('irc:send-typing', channel, status),
+  onIRCTyping: (callback) => {
+    ipcRenderer.on('irc:typing', (_event, data) => callback(data));
+  },
 
   log: (tag, data) => ipcRenderer.invoke('log', tag, data),
 

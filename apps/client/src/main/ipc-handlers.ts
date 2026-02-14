@@ -170,6 +170,15 @@ export function registerIPCHandlers(): void {
     socket?.emit('irc:presence', { status });
   });
 
+  ipcMain.handle('irc:send-typing', async (_event, channel: string, status: 'active' | 'paused' | 'done') => {
+    socket?.emit('irc:typing', { target: channel, status });
+  });
+
+  socket?.on('irc:typing', (data: { nick: string; target: string; status: 'active' | 'paused' | 'done' }) => {
+    const mainWindow = getMainWindow();
+    mainWindow?.webContents.send('irc:typing', data);
+  });
+
   ipcMain.handle('log', async (_event, tag: string, data: unknown) => {
     console.log(`[${tag}]`, data);
   });

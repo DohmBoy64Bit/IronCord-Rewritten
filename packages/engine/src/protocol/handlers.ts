@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { logger } from '@ironcord/shared/logger';
-import type { IRCMessage, IRCMembers, IRCPresence } from '../types.js';
+import type { IRCMessage, IRCMembers, IRCPresence, IRCTyping } from '../types.js';
 import { extractNickFromPrefix } from './parser.js';
 import { extractMessageData, getBatchTag } from './tags.js';
 import { formatPong, formatCapabilityRequest, formatCapabilityEnd } from './formatter.js';
@@ -61,6 +61,9 @@ export class MessageHandlers {
         break;
       case 'PRIVMSG':
         this.handlePrivmsg(message);
+        break;
+      case 'TAGMSG':
+        this.handleTagMsg(message);
         break;
       default:
         if (/^\d{3}$/.test(message.command)) {
@@ -250,6 +253,21 @@ export class MessageHandlers {
       this.batchHandler.addMessage(batchTag, msgData);
     } else {
       this.emitter.emit('message', msgData);
+    }
+  }
+
+  private handleTagMsg(message: IRCMessage): void {
+    const target = message.params[0];
+    if (!target) return;
+
+    const typingTag = message.tags['+typing'];
+    if (typingTag) {
+      const nick = extractNickFromPrefix(message.prefix);
+      this.emitter.emit('typing', {
+        nick,
+        target,
+        status: typingTag as 'active' | 'paused' | 'done'
+      } as IRCTyping);
     }
   }
 }

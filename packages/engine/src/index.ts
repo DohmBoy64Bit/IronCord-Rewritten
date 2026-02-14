@@ -8,4 +8,5 @@ export type {
   IRCMembers,
   ReconnectEvent,
   IRCClientEvents,
+  IRCTyping,
 } from './types.js';

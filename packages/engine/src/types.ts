@@ -57,4 +57,11 @@ export type IRCClientEvents = {
   close: () => void;
   reconnecting: (event: ReconnectEvent) => void;
   reconnect_failed: () => void;
+  typing: (data: IRCTyping) => void;
 };
+
+export interface IRCTyping {
+  nick: string;
+  target: string;
+  status: 'active' | 'paused' | 'done';
+}

@@ -37,6 +37,11 @@ interface IRCPresencePayload {
   status: UserPresence;
 }
 
+interface IRCTypingPayload {
+  target: string;
+  status: 'active' | 'paused' | 'done';
+}
+
 export class IRCBridgeHandler {
   constructor(
     private connectionHandler: ConnectionHandler,
@@ -66,6 +71,10 @@ export class IRCBridgeHandler {
 
     socket.on('irc:presence', (payload: IRCPresencePayload) => {
       this.handlePresence(socket, payload);
+    });
+
+    socket.on('irc:typing', (payload: IRCTypingPayload) => {
+      this.handleTyping(socket, payload);
     });
   }
 
@@ -191,6 +200,13 @@ export class IRCBridgeHandler {
     const ircClient = this.connectionHandler.getIRCClient(socket.id);
     if (ircClient && ircClient.ready()) {
       ircClient.setPresence(payload.status as any);
+    }
+  }
+
+  private handleTyping(socket: Socket, payload: IRCTypingPayload): void {
+    const ircClient = this.connectionHandler.getIRCClient(socket.id);
+    if (ircClient && ircClient.ready()) {
+      ircClient.typing(payload.target, payload.status);
     }
   }
 

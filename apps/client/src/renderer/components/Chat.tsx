@@ -58,6 +58,27 @@ const StatusIndicator: React.FC<{ status?: string }> = ({ status }) => {
   );
 };
 
+const TypingIndicator: React.FC<{ typingUsers: string[] }> = ({ typingUsers }) => {
+  if (typingUsers.length === 0) return null;
+
+  let text = '';
+  if (typingUsers.length === 1) {
+    text = `${typingUsers[0]} is typing...`;
+  } else if (typingUsers.length === 2) {
+    text = `${typingUsers[0]} and ${typingUsers[1]} are typing...`;
+  } else if (typingUsers.length === 3) {
+    text = `${typingUsers[0]}, ${typingUsers[1]}, and ${typingUsers[2]} are typing...`;
+  } else {
+    text = 'Several people are typing...';
+  }
+
+  return (
+    <div className="absolute bottom-full left-4 mb-2 text-xs font-bold text-gray-400 animate-pulse">
+      {text}
+    </div>
+  );
+};
+
 export const Chat: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const currentGuildId = useGuildStore((state) => state.currentGuildId);
@@ -71,9 +92,11 @@ export const Chat: React.FC = () => {
   const [showMemberList, setShowMemberList] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [typingUsers, setTypingUsers] = useState<Map<string, number>>(new Map());
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const lastTypedRef = useRef<number>(0);
 
   const channelsMap = channels && typeof channels === 'object' ? channels : {};
   const messagesMap = messages && typeof messages === 'object' ? messages : {};
@@ -93,12 +116,62 @@ export const Chat: React.FC = () => {
     }
   }, [filteredMessages]);
 
+  useEffect(() => {
+    const handleTypingEvent = (data: { nick: string; target: string; status: 'active' | 'paused' | 'done' }) => {
+      if (!currentChannel || data.target !== currentChannel.irc_channel_name) return;
+      if (data.nick === user?.irc_nick) return;
+
+      setTypingUsers(prev => {
+        const next = new Map(prev);
+        if (data.status === 'active') {
+          next.set(data.nick, Date.now());
+        } else {
+          next.delete(data.nick);
+        }
+        return next;
+      });
+    };
+
+    window.ironcord.onIRCTyping(handleTypingEvent);
+
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setTypingUsers(prev => {
+        let changed = false;
+        const next = new Map(prev);
+        for (const [nick, time] of next.entries()) {
+          if (now - time > 6000) {
+            next.delete(nick);
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [currentChannel, user?.irc_nick]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+
+    if (currentChannel) {
+      const now = Date.now();
+      if (now - lastTypedRef.current > 3000) {
+        window.ironcord.sendTyping(currentChannel.irc_channel_name, 'active');
+        lastTypedRef.current = now;
+      }
+    }
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || !currentChannel) return;
 
     try {
       await window.ironcord.sendMessage(currentChannel.irc_channel_name, input);
+      window.ironcord.sendTyping(currentChannel.irc_channel_name, 'done');
+      lastTypedRef.current = 0;
       setInput('');
       setShowEmojiPicker(false);
     } catch (err) {
@@ -227,6 +300,7 @@ export const Chat: React.FC = () => {
           </div>
 
           <div className="px-4 pb-6 relative">
+            <TypingIndicator typingUsers={Array.from(typingUsers.keys())} />
             {showEmojiPicker && (
               <div className="glass-panel absolute bottom-20 right-4 z-50 rounded-lg bg-black/80 backdrop-blur-xl p-3 shadow-2xl border-gray-700 w-64">
                 <div className="grid grid-cols-6 gap-2">
@@ -258,7 +332,7 @@ export const Chat: React.FC = () => {
               <input
                 type="text"
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 placeholder={`Message #${currentChannel.name}`}
                 className="flex-1 bg-transparent py-2 text-gray-200 outline-none placeholder-gray-500"
