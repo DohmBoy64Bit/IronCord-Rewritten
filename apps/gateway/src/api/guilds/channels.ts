@@ -219,3 +219,99 @@ export async function createChannelHandler(
     next(err);
   }
 }
+
+export async function updateChannelHandler(
+  req: Request,
+  res: Response<UpdateChannelResponse>,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const authReq = req as AuthenticatedRequest;
+    const userId = authReq.user?.userId;
+    const channelId = typeof req.params.channelId === 'string' ? req.params.channelId : req.params.channelId?.[0];
+    const guildId = typeof req.params.id === 'string' ? req.params.id : req.params.id?.[0];
+
+    if (!userId) {
+      res.status(401).json({ success: false, error: 'Unauthorized' });
+      return;
+    }
+
+    if (!guildId || !channelId) {
+      res.status(400).json({ success: false, error: 'Guild and Channel IDs are required' });
+      return;
+    }
+
+    const { name, topic } = req.body;
+
+    const guildRepo = new GuildRepository(req.app.locals.db);
+    const channelRepo = new ChannelRepository(req.app.locals.db);
+
+    const guild = await guildRepo.findById(guildId);
+    if (!guild || guild.owner_id !== userId) {
+      res.status(403).json({ success: false, error: 'Forbidden' });
+      return;
+    }
+
+    const updatedChannel = await channelRepo.update(channelId, { name, topic });
+    if (!updatedChannel) {
+      res.status(404).json({ success: false, error: 'Channel not found' });
+      return;
+    }
+
+    logger.info('CHANNEL-UPDATE', { userId, guildId, channelId, updates: { name, topic } });
+    res.json({ success: true, channel: updatedChannel });
+  } catch (err) {
+    logger.error('CHANNEL-UPDATE', { error: err instanceof Error ? err.message : 'Unknown error' });
+    next(err);
+  }
+}
+
+export async function deleteChannelHandler(
+  req: Request,
+  res: Response<{ success: boolean; error?: string }>,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const authReq = req as AuthenticatedRequest;
+    const userId = authReq.user?.userId;
+    const channelId = typeof req.params.channelId === 'string' ? req.params.channelId : req.params.channelId?.[0];
+    const guildId = typeof req.params.id === 'string' ? req.params.id : req.params.id?.[0];
+
+    if (!userId) {
+      res.status(401).json({ success: false, error: 'Unauthorized' });
+      return;
+    }
+
+    if (!guildId || !channelId) {
+      res.status(400).json({ success: false, error: 'Guild and Channel IDs are required' });
+      return;
+    }
+
+    const guildRepo = new GuildRepository(req.app.locals.db);
+    const channelRepo = new ChannelRepository(req.app.locals.db);
+
+    const guild = await guildRepo.findById(guildId);
+    if (!guild || guild.owner_id !== userId) {
+      res.status(403).json({ success: false, error: 'Forbidden' });
+      return;
+    }
+
+    const deleted = await channelRepo.delete(channelId);
+    if (!deleted) {
+      res.status(404).json({ success: false, error: 'Channel not found' });
+      return;
+    }
+
+    logger.info('CHANNEL-DELETE', { userId, guildId, channelId });
+    res.json({ success: true });
+  } catch (err) {
+    logger.error('CHANNEL-DELETE', { error: err instanceof Error ? err.message : 'Unknown error' });
+    next(err);
+  }
+}
+
+interface UpdateChannelResponse {
+  success: boolean;
+  channel?: Channel;
+  error?: string;
+}

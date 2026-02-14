@@ -35,31 +35,61 @@ export const useGuildStore = create<GuildState>((set) => ({
     set((state) => ({
       members: { ...state.members, [channel]: channelMembers },
     })),
-  updateGuild: (guildId, updates) =>
-    set((state) => ({
-      guilds: state.guilds.map((g) => (g.id === guildId ? { ...g, ...updates } : g)),
-    })),
-  updateChannel: (channelId, updates) =>
-    set((state) => {
-      const newChannels = { ...state.channels };
-      for (const guildId in newChannels) {
-        newChannels[guildId] = newChannels[guildId].map((c) =>
-          c.id === channelId ? { ...c, ...updates } : c
-        );
-      }
-      return { channels: newChannels };
-    }),
-  deleteChannel: (channelId) =>
-    set((state) => {
-      const newChannels = { ...state.channels };
-      for (const guildId in newChannels) {
-        newChannels[guildId] = newChannels[guildId].filter((c) => c.id !== channelId);
-      }
-      return {
-        channels: newChannels,
-        currentChannelId: state.currentChannelId === channelId ? null : state.currentChannelId,
-      };
-    }),
+  updateGuild: async (guildId, updates) => {
+    try {
+      const updatedGuild = await window.ironcord.updateGuild(guildId, updates);
+      set((state) => ({
+        guilds: state.guilds.map((g) => (g.id === guildId ? updatedGuild : g)),
+      }));
+    } catch (err) {
+      console.error('Failed to update guild in store:', err);
+      throw err;
+    }
+  },
+  updateChannel: async (channelId, updates) => {
+    try {
+      const state = useGuildStore.getState();
+      const currentGuildId = state.currentGuildId;
+      if (!currentGuildId) return;
+
+      const updatedChannel = await window.ironcord.updateChannel(currentGuildId, channelId, updates);
+      set((state) => {
+        const newChannels = { ...state.channels };
+        for (const guildId in newChannels) {
+          newChannels[guildId] = newChannels[guildId].map((c) =>
+            c.id === channelId ? updatedChannel : c
+          );
+        }
+        return { channels: newChannels };
+      });
+    } catch (err) {
+      console.error('Failed to update channel in store:', err);
+      throw err;
+    }
+  },
+  deleteChannel: async (channelId) => {
+    try {
+      const state = useGuildStore.getState();
+      const currentGuildId = state.currentGuildId;
+      if (!currentGuildId) return;
+
+      await window.ironcord.deleteChannel(currentGuildId, channelId);
+
+      set((state) => {
+        const newChannels = { ...state.channels };
+        for (const guildId in newChannels) {
+          newChannels[guildId] = newChannels[guildId].filter((c) => c.id !== channelId);
+        }
+        return {
+          channels: newChannels,
+          currentChannelId: state.currentChannelId === channelId ? null : state.currentChannelId,
+        };
+      });
+    } catch (err) {
+      console.error('Failed to delete channel in store:', err);
+      throw err;
+    }
+  },
   createChannel: async (guildId, name) => {
     try {
       const channel = await window.ironcord.createChannel(guildId, { name });

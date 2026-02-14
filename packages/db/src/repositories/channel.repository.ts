@@ -3,7 +3,7 @@ import { DatabaseService } from '../database.service.js';
 import { ChannelRow, CreateChannelInput, channelRowToChannel } from '../types.js';
 
 export class ChannelRepository {
-  constructor(private db: DatabaseService) {}
+  constructor(private db: DatabaseService) { }
 
   async create(input: CreateChannelInput): Promise<Channel> {
     const result = await this.db.query<ChannelRow>(
@@ -42,12 +42,32 @@ export class ChannelRepository {
     return result.rows[0] ? channelRowToChannel(result.rows[0]) : null;
   }
 
-  async updateTopic(id: string, topic: string): Promise<Channel | null> {
+  async update(id: string, updates: Partial<Channel>): Promise<Channel | null> {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let i = 1;
+
+    if (updates.name !== undefined) {
+      fields.push(`name = $${i++}`);
+      values.push(updates.name);
+    }
+    if (updates.topic !== undefined) {
+      fields.push(`topic = $${i++}`);
+      values.push(updates.topic);
+    }
+
+    if (fields.length === 0) return this.findById(id);
+
+    values.push(id);
     const result = await this.db.query<ChannelRow>(
-      'UPDATE channels SET topic = $1 WHERE id = $2 RETURNING *',
-      [topic, id]
+      `UPDATE channels SET ${fields.join(', ')} WHERE id = $${i} RETURNING *`,
+      values
     );
     return result.rows[0] ? channelRowToChannel(result.rows[0]) : null;
+  }
+
+  async updateTopic(id: string, topic: string): Promise<Channel | null> {
+    return this.update(id, { topic });
   }
 
   async delete(id: string): Promise<boolean> {

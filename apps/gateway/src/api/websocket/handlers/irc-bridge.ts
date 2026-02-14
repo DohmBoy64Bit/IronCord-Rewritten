@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
 import { IRCClient } from '@ironcord/engine';
-import type { IRCConfig, IRCMessageData, IRCMembers, IRCPresence, ReconnectEvent } from '@ironcord/engine';
+import type { IRCConfig } from '@ironcord/engine';
 import type { UserPresence } from '@ironcord/shared/types';
 import { logger } from '@ironcord/shared';
 import { config } from '../../../config/env.js';

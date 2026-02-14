@@ -14,7 +14,10 @@ const api: IronCordAPI = {
   getMyGuilds: () => ipcRenderer.invoke('guilds:get-mine'),
   getChannels: (guildId) => ipcRenderer.invoke('guilds:get-channels', guildId),
   createGuild: (data) => ipcRenderer.invoke('guilds:create', data),
+  updateGuild: (guildId, data) => ipcRenderer.invoke('guilds:update', guildId, data),
   createChannel: (guildId, data) => ipcRenderer.invoke('guilds:create-channel', guildId, data),
+  updateChannel: (guildId, channelId, data) => ipcRenderer.invoke('guilds:update-channel', guildId, channelId, data),
+  deleteChannel: (guildId, channelId) => ipcRenderer.invoke('guilds:delete-channel', guildId, channelId),
 
   setPresence: (status) => ipcRenderer.invoke('presence:set', status),
 

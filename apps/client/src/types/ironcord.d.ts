@@ -13,7 +13,10 @@ interface IronCordAPI {
   getMyGuilds: () => Promise<Guild[]>;
   getChannels: (guildId: string) => Promise<Channel[]>;
   createGuild: (data: CreateGuildRequest) => Promise<Guild>;
+  updateGuild: (guildId: string, data: Partial<CreateGuildRequest>) => Promise<Guild>;
   createChannel: (guildId: string, data: CreateChannelRequest) => Promise<Channel>;
+  updateChannel: (guildId: string, channelId: string, data: Partial<CreateChannelRequest>) => Promise<Channel>;
+  deleteChannel: (guildId: string, channelId: string) => Promise<void>;
 
   setPresence: (status: UserPresence) => Promise<void>;
 

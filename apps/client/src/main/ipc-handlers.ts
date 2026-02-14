@@ -141,6 +141,20 @@ export function registerIPCHandlers(): void {
     return result.channel;
   });
 
+  ipcMain.handle('guilds:update', async (_event, guildId: string, data: Partial<CreateGuildRequest>) => {
+    const result = await httpRequest<{ guild: Guild }>('PATCH', `/guilds/${guildId}`, data);
+    return result.guild;
+  });
+
+  ipcMain.handle('guilds:update-channel', async (_event, guildId: string, channelId: string, data: Partial<CreateChannelRequest>) => {
+    const result = await httpRequest<{ channel: Channel }>('PATCH', `/guilds/${guildId}/channels/${channelId}`, data);
+    return result.channel;
+  });
+
+  ipcMain.handle('guilds:delete-channel', async (_event, guildId: string, channelId: string) => {
+    await httpRequest<{ success: boolean }>('DELETE', `/guilds/${guildId}/channels/${channelId}`);
+  });
+
   ipcMain.handle('presence:set', async (_event, status: UserPresence) => {
     socket?.emit('irc:presence', { status });
   });
